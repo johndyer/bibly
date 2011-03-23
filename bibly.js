@@ -1,6 +1,7 @@
 var bibly = (window.bibly) ? window.bibly : {};
 bibly.version = '0.1';
 bibly.max_nodes =  500;
+bibly.className = 'bibly_reference';
 
 (function() {
 
@@ -24,13 +25,14 @@ bibly.max_nodes =  500;
 		ver = '\\d+(:\\d+)?(?:\\s?[-&]\\s?\\d+)?',
 		regexPattern = '\\b(?:('+vol+')\\s+)?('+bok+')\.?\\s+('+ver+'(?:\\s?,\\s?'+ver+')*)\\b',
 		referenceRegex = new RegExp(regexPattern, "m"),
-		skipRegex = /^(a|script|style|textarea)/i,
+		skipRegex = /^(a|script|style|textarea)$/i,
 		textHandler = function(node) {
 			var match = referenceRegex.exec(node.data), 
 				val, 
 				referenceNodePlusRemainder, 
 				afterReferenceNode,
-				newLink;
+				newLink,
+				refText;
 			
 			if (match) {
 				val = match[0];
@@ -41,18 +43,20 @@ bibly.max_nodes =  500;
 				//newLink.innerText = 'test';
 				
 				node.parentNode.replaceChild(newLink, referenceNodePlusRemainder);				
-				newLink.className = 'bibly';
+				newLink.className = bibly.className;
 				newLink.appendChild(referenceNodePlusRemainder);
-				newLink.setAttribute('href', 'http://bib.ly/' + encodeURI(newLink.innerText));
+				
+				refText = newLink.innerText;
+				refText = refText.replace(/\s/ig,'').replace(/:/ig,'.');
+				
+				newLink.setAttribute('href', 'http://bib.ly/' + refText);
 				return newLink;
 			} else {
 				return node;
 			}
-		};		
+		};
 	
-
-	
-	function handleDocument() {
+	function parseDocument() {
 		traverseDOM(document.body, 1, textHandler);
 	}
 	function traverseDOM(node, depth, textHandler) {
@@ -95,13 +99,13 @@ bibly.max_nodes =  500;
 	}	
 
     if (window.attachEvent) {
-        window.attachEvent('onload', handleDocument);
+        window.attachEvent('onload', parseDocument);
     } else if (window.addEventListener) {
-        window.addEventListener('load', handleDocument, false);
+        window.addEventListener('load', parseDocument, false);
     } else {
         __onload = window.onload;
         window.onload = function() {
-           handleDocument();
+           parseDocument();
             __onload();
         };
     }	
