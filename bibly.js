@@ -23,14 +23,15 @@ bibly.className = 'bibly_reference';
 			'Thessalonians|Thes{1,2}?|Timothy|Tim|Titus|Tts|Tit|Philemon|Phil?|'+
 			'Hebrews|Hebr?|James|Jam|Jms|Peter|Pete?|Jude|Ju|Revelations?|Rev|'+
 			'Revel',
-		ver = '\\d+(:\\d+)?(?:\\s?[-–&]\\s?\\d+)?',
-		regexPattern = '\\b(?:('+vol+')\\s+)?('+bok+')\.?\\s+('+ver+'(?:\\s?,\\s?'+ver+')*)'+'(?:\\s?;\\s?'+ver+')*\\b',
+		ver =  '\\d+(:\\d+)?(?:\\s?[-–&]\\s?\\d+)?',  // 1 OR 1:1 OR 1:1-2
+		ver2 = '\\d+:\\d+(?:\\s?[-–&]\\s?\\d+)?',     // NOT 1, 1:1 OR 1:1-2
+		regexPattern = '\\b(?:('+vol+')\\s+)?('+bok+')\.?\\s+('+ver+'(?:\\s?,\\s?'+ver+')*)'+'(?:\\s?;\\s?'+ver2+')*\\b',
 		referenceRegex = new RegExp(regexPattern, "m"),
 		skipRegex = /^(a|script|style|textarea)$/i,
 		textHandler = function(node) {
 			var match = referenceRegex.exec(node.data), 
 				val, 
-				referenceNodePlusRemainder, 
+				referenceNode, 
 				afterReferenceNode,
 				newLink,
 				refText,
@@ -38,19 +39,25 @@ bibly.className = 'bibly_reference';
 			
 			if (match) {
 				val = match[0];
-				referenceNodePlusRemainder = node.splitText(match.index);
-				afterReferenceNode = referenceNodePlusRemainder.splitText(val.length);
-				newLink = node.ownerDocument.createElement('A');
+				// see https://developer.mozilla.org/en/DOM/text.splitText
+				// split into three parts [node=before][referenceNode][afterReferenceNode]
+				referenceNode = node.splitText(match.index);
+				afterReferenceNode = referenceNode.splitText(val.length);
 				
-				node.parentNode.replaceChild(newLink, referenceNodePlusRemainder);				
+				// replace the referenceNode TEXT with an anchor node
+				newLink = node.ownerDocument.createElement('A');				
+				node.parentNode.replaceChild(newLink, referenceNode);				
+				
+				// setup reference node attributes
 				newLink.className = bibly.className;
-				newLink.appendChild(referenceNodePlusRemainder);
+				newLink.appendChild(referenceNode);		
 				
+				// create bib.ly URL link
 				refText = newLink.innerText;
-				shortenedRef = refText.replace(/\s/ig,'').replace(/:/ig,'.').replace(/–/ig,'-');
-				
+				shortenedRef = refText.replace(/\s/ig,'').replace(/:/ig,'.').replace(/–/ig,'-');				
 				newLink.setAttribute('href', 'http://bib.ly/' + shortenedRef);
 				newLink.setAttribute('title', 'Read ' + refText);
+				
 				return newLink;
 			} else {
 				return node;
