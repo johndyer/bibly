@@ -1,12 +1,13 @@
+// adapted from old scripturizer.js code
+
 var bibly = (window.bibly) ? window.bibly : {};
-bibly.version = '0.1';
+bibly.version = '0.2.dev';
 bibly.max_nodes =  500;
 bibly.className = 'bibly_reference';
 
 (function() {
 
-	// book names list
-	// adapted from old scripturizer.js code
+	// book names list	
     var vol = 'I+|1st|2nd|3rd|First|Second|Third|1|2|3',
 		bok = 'Genesis|Gen|Exodus|Exod?|Leviticus|Lev|Levit?|Numbers|'+
 			'Nmb|Numb?|Deuteronomy|Deut?|Joshua|Josh?|Judges|Jdg|Judg?|Ruth|Ru|'+
@@ -23,7 +24,7 @@ bibly.className = 'bibly_reference';
 			'Hebrews|Hebr?|James|Jam|Jms|Peter|Pete?|Jude|Ju|Revelations?|Rev|'+
 			'Revel',
 		ver = '\\d+(:\\d+)?(?:\\s?[-&]\\s?\\d+)?',
-		regexPattern = '\\b(?:('+vol+')\\s+)?('+bok+')\.?\\s+('+ver+'(?:\\s?,\\s?'+ver+')*)\\b',
+		regexPattern = '\\b(?:('+vol+')\\s+)?('+bok+')\.?\\s+('+ver+'(?:\\s?,\\s?'+ver+')*)'+'(?:\\s?;\\s?'+ver+')*\\b',
 		referenceRegex = new RegExp(regexPattern, "m"),
 		skipRegex = /^(a|script|style|textarea)$/i,
 		textHandler = function(node) {
@@ -40,8 +41,6 @@ bibly.className = 'bibly_reference';
 				referenceNodePlusRemainder = node.splitText(match.index);
 				afterReferenceNode = referenceNodePlusRemainder.splitText(val.length);
 				newLink = node.ownerDocument.createElement('A');
-				
-				//newLink.innerText = 'test';
 				
 				node.parentNode.replaceChild(newLink, referenceNodePlusRemainder);				
 				newLink.className = bibly.className;
