@@ -493,8 +493,12 @@ bibly.className = 'bibly_reference';
 		ver =  '\\d+(:\\d+)?(?:\\s?[-–&]\\s?\\d+)?',  // 1 OR 1:1 OR 1:1-2
 		ver2 = '\\d+:\\d+(?:\\s?[-–&]\\s?\\d+)?',     // NOT 1, 1:1 OR 1:1-2
 		regexPattern = '\\b('+bok+')\.?\\s+('+ver+'(?:\\s?,\\s?'+ver+')*)'+'(?:\\s?;\\s?'+ver2+')*\\b',
-		referenceRegex = new RegExp(regexPattern, "m"),
+		referenceRegex = new RegExp(regexPattern, 'm'),
+		verseRegex = new RegExp('^\\d+$', 'm'),
+		chapterVerseRegex = new RegExp('(:?\\d+):(:?\\d+)','m'),
+		chapterVerseVerseRegex = new RegExp('^(:?\\d+):(:?\\d+)[-–&](:?\\d+)$', 'm'),
 		skipRegex = /^(a|script|style|textarea)$/i,
+		lastReference = null,
 		textHandler = function(node) {
 			var match = referenceRegex.exec(node.data), 
 				val, 
@@ -547,7 +551,7 @@ bibly.className = 'bibly_reference';
 			newLink = node.ownerDocument.createElement('A');				
 			node.parentNode.replaceChild(newLink, referenceNode);			
 			refText = referenceNode.textContent;	
-			reference = parseReference(refText);
+			reference = parseRefText(refText);
 			newLink.setAttribute('href', reference.toShortUrl());
 			newLink.setAttribute('title', 'Read ' + reference.toString());				
 			newLink.setAttribute('class', bibly.className);
@@ -560,23 +564,56 @@ bibly.className = 'bibly_reference';
 			
 			return newLink;
 		},
-		parseReference= function(refText) {
+		parseRefText = function(refText) {
 			
-			var ref = new bible.Reference(refText);
+			var 
+				text = refText,
+				reference = new bible.Reference(text),
+				match = null;
 			
-			if (ref != null && typeof ref.isValid != 'undefined' && ref.isValid()) {
-				return ref;
+			if (reference != null && typeof reference.isValid != 'undefined' && reference.isValid()) {
+				lastReference = reference;
+				return reference;
 			} else {
-				// temp small node
+				
+				// single verse match (3)
+				match = verseRegex.exec(refText);				
+				if (match) {				
+					lastReference.verse1 = parseInt(match[0],10);
+					return lastReference;
+				}
+				
+				// chapter:verse match (2:3)
+				match = chapterVerseRegex.exec(refText);				
+				if (match) {				
+					lastReference.chapter1 = parseInt(match[1],10);
+					lastReference.verse1 = parseInt(match[2],10);
+					lastReference.chapter2 = -1;
+					lastReference.verse2 = -1;
+					return lastReference;
+				}	
+
+				// chapter:verse match (2:3-4)
+				match = chapterVerseVerseRegex.exec(refText);				
+				if (match) {				
+					lastReference.chapter1 = parseInt(match[1],10);
+					lastReference.verse1 = parseInt(match[2],10);
+					lastReference.chapter2 = -1;
+					lastReference.verse2 = parseInt(match[3],10);
+					return lastReference;
+				}							
+			
+				// failure
 				return {
 					refText: refText,
 					toShortUrl: function() {
-						return 'http://bib.ly/' + refText.replace(/\s/ig,'').replace(/:/ig,'.').replace(/�/ig,'-');
+						return 'http://bib.ly/' + refText.replace(/\s/ig,'').replace(/:/ig,'.').replace(/–/ig,'-');
 					},
 					toString: function() {
 						return refText  + " = Can't parse it";
 					}
 				};
+				
 			}
 		}
 	
