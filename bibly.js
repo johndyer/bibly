@@ -1,7 +1,7 @@
-// adapted from old scripturizer.js code
+ï»¿// adapted from old scripturizer.js code
 
 var bibly = (window.bibly) ? window.bibly : {};
-bibly.version = '0.2.dev';
+bibly.version = '0.2';
 bibly.max_nodes =  500;
 bibly.className = 'bibly_reference';
 
@@ -23,8 +23,8 @@ bibly.className = 'bibly_reference';
 			'Thessalonians|Thes{1,2}?|Timothy|Tim|Titus|Tts|Tit|Philemon|Phil?|'+
 			'Hebrews|Hebr?|James|Jam|Jms|Peter|Pete?|Jude|Ju|Revelations?|Rev|'+
 			'Revel',
-		ver =  '\\d+(:\\d+)?(?:\\s?[-–&]\\s?\\d+)?',  // 1 OR 1:1 OR 1:1-2
-		ver2 = '\\d+:\\d+(?:\\s?[-–&]\\s?\\d+)?',     // NOT 1, 1:1 OR 1:1-2
+		ver =  '\\d+(:\\d+)?(?:\\s?[-â€“&]\\s?\\d+)?',  // 1 OR 1:1 OR 1:1-2
+		ver2 = '\\d+:\\d+(?:\\s?[-â€“&]\\s?\\d+)?',     // NOT 1, 1:1 OR 1:1-2
 		regexPattern = '\\b(?:('+vol+')\\s+)?('+bok+')\.?\\s+('+ver+'(?:\\s?,\\s?'+ver+')*)'+'(?:\\s?;\\s?'+ver2+')*\\b',
 		referenceRegex = new RegExp(regexPattern, "m"),
 		skipRegex = /^(a|script|style|textarea)$/i,
@@ -44,25 +44,8 @@ bibly.className = 'bibly_reference';
 				referenceNode = node.splitText(match.index);
 				afterReferenceNode = referenceNode.splitText(val.length);
 				
+				// send the matched text down the 
 				newLink = createLinksFromNode(node, referenceNode);
-				
-				/* SIMPLE
-				
-				// replace the referenceNode TEXT with an anchor node
-				newLink = node.ownerDocument.createElement('A');				
-				node.parentNode.replaceChild(newLink, referenceNode);				
-				
-				// setup reference node attributes
-				newLink.className = bibly.className;
-				newLink.appendChild(referenceNode);		
-				
-				// create bib.ly URL link
-				refText = newLink.innerText;
-				shortenedRef = refText.replace(/\s/ig,'').replace(/:/ig,'.').replace(/–/ig,'-');				
-				newLink.setAttribute('href', 'http://bib.ly/' + shortenedRef);
-				newLink.setAttribute('title', 'Read ' + refText);
-				
-				*/
 				
 				return newLink;
 			} else {
@@ -79,13 +62,14 @@ bibly.className = 'bibly_reference';
 				separatorIndex = (commaIndex > 0 && semiColonIndex > 0) ? Math.min(commaIndex, semiColonIndex) : Math.max(commaIndex, semiColonIndex),
 				separator,
 				remainder,
-				reference;
+				reference,
+				startRemainder;
 			
 			// if there is a separator ,; then split up into three parts [node][separator][after]
 			if (separatorIndex > 0) {
 				separator = referenceNode.splitText(separatorIndex);
 				
-				var startRemainder = 1;
+				startRemainder = 1;
 				while(startRemainder < separator.textContent.length && separator.textContent.substring(startRemainder,startRemainder+1) == ' ')
 					startRemainder++;
 				
