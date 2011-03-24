@@ -3,7 +3,7 @@ import os
 import shutil
 
 bibly_filename = 'bibly'
-bibly_version = '0.2'
+bibly_version = '0.3'
 bibly_version_path = 'build/' + bibly_version + '/'
 bibly_active_path = 'build/'
 
