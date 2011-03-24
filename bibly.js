@@ -23,7 +23,7 @@ bibly.className = 'bibly_reference';
 			'Thessalonians|Thes{1,2}?|Timothy|Tim|Titus|Tts|Tit|Philemon|Phil?|'+
 			'Hebrews|Hebr?|James|Jam|Jms|Peter|Pete?|Jude|Ju|Revelations?|Rev|'+
 			'Revel',
-		ver = '\\d+(:\\d+)?(?:\\s?[-&]\\s?\\d+)?',
+		ver = '\\d+(:\\d+)?(?:\\s?[-–&]\\s?\\d+)?',
 		regexPattern = '\\b(?:('+vol+')\\s+)?('+bok+')\.?\\s+('+ver+'(?:\\s?,\\s?'+ver+')*)'+'(?:\\s?;\\s?'+ver+')*\\b',
 		referenceRegex = new RegExp(regexPattern, "m"),
 		skipRegex = /^(a|script|style|textarea)$/i,
@@ -47,7 +47,7 @@ bibly.className = 'bibly_reference';
 				newLink.appendChild(referenceNodePlusRemainder);
 				
 				refText = newLink.innerText;
-				shortenedRef = refText.replace(/\s/ig,'').replace(/:/ig,'.');
+				shortenedRef = refText.replace(/\s/ig,'').replace(/:/ig,'.').replace(/–/ig,'-');
 				
 				newLink.setAttribute('href', 'http://bib.ly/' + shortenedRef);
 				newLink.setAttribute('title', 'Read ' + refText);
