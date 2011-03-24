@@ -44,7 +44,7 @@ bibly.className = 'bibly_reference';
 				referenceNode = node.splitText(match.index);
 				afterReferenceNode = referenceNode.splitText(val.length);
 				
-				newLink = parseReferenceMatch(node, referenceNode);
+				newLink = createLinksFromNode(node, referenceNode);
 				
 				/* SIMPLE
 				
@@ -69,7 +69,8 @@ bibly.className = 'bibly_reference';
 				return node;
 			}
 		},
-		parseReferenceMatch = function(node, referenceNode) {
+		createLinksFromNode = function(node, referenceNode) {
+			// split up match by ; and , characters and make a unique link for each
 			var 
 				newLink,
 				shortenedRef,
@@ -77,30 +78,48 @@ bibly.className = 'bibly_reference';
 				semiColonIndex = referenceNode.textContent.indexOf(';'),
 				separatorIndex = (commaIndex > 0 && semiColonIndex > 0) ? Math.min(commaIndex, semiColonIndex) : Math.max(commaIndex, semiColonIndex),
 				separator,
-				remainder;
-				
+				remainder,
+				reference;
+			
+			// if there is a separator ,; then split up into three parts [node][separator][after]
 			if (separatorIndex > 0) {
 				separator = referenceNode.splitText(separatorIndex);
-				remainder = separator.splitText(1);
-			}
+				
+				var startRemainder = 1;
+				while(startRemainder < separator.textContent.length && separator.textContent.substring(startRemainder,startRemainder+1) == ' ')
+					startRemainder++;
+				
+				remainder = separator.splitText(startRemainder);
+			}	
 			
 			// replace the referenceNode TEXT with an anchor node
 			newLink = node.ownerDocument.createElement('A');				
-			node.parentNode.replaceChild(newLink, referenceNode);				
-			
-			// setup reference node attributes				
-			refText = referenceNode.textContent;
-			shortenedRef = refText.replace(/\s/ig,'').replace(/:/ig,'.').replace(/–/ig,'-');				
-			newLink.setAttribute('href', 'http://bib.ly/' + shortenedRef);
-			newLink.setAttribute('title', 'Read ' + refText);					
+			node.parentNode.replaceChild(newLink, referenceNode);			
+			refText = referenceNode.textContent;	
+			reference = parseReference(refText);			
+			newLink.setAttribute('href', reference.shortUrl());
+			newLink.setAttribute('title', 'Read ' + reference.toString());				
 			newLink.setAttribute('class', bibly.className);
 			newLink.appendChild(referenceNode);
 			
+			// if there was a separator, now parse the stuff after it
 			if (remainder) {				
-				newLink = parseReferenceMatch(node, remainder);				
+				newLink = createLinksFromNode(node, remainder);				
 			}	
 			
 			return newLink;
+		},
+		parseReference= function(refText) {
+			// temp small node
+			return {
+				refText: refText,
+				shortUrl: function() {
+					return 'http://bib.ly/' + refText.replace(/\s/ig,'').replace(/:/ig,'.').replace(/–/ig,'-');
+				},
+				toString: function() {
+					return refText;
+				}
+			};
 		}
 	
 	function parseDocument() {
