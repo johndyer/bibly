@@ -32,7 +32,8 @@ bibly.className = 'bibly_reference';
 				referenceNodePlusRemainder, 
 				afterReferenceNode,
 				newLink,
-				refText;
+				refText,
+				shortenedRef;
 			
 			if (match) {
 				val = match[0];
@@ -47,9 +48,10 @@ bibly.className = 'bibly_reference';
 				newLink.appendChild(referenceNodePlusRemainder);
 				
 				refText = newLink.innerText;
-				refText = refText.replace(/\s/ig,'').replace(/:/ig,'.');
+				shortenedRef = refText.replace(/\s/ig,'').replace(/:/ig,'.');
 				
-				newLink.setAttribute('href', 'http://bib.ly/' + refText);
+				newLink.setAttribute('href', 'http://bib.ly/' + shortenedRef);
+				newLink.setAttribute('title', 'Read ' + refText);
 				return newLink;
 			} else {
 				return node;
