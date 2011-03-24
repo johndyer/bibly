@@ -44,6 +44,10 @@ bibly.className = 'bibly_reference';
 				referenceNode = node.splitText(match.index);
 				afterReferenceNode = referenceNode.splitText(val.length);
 				
+				newLink = parseReferenceMatch(node, referenceNode);
+				
+				/* SIMPLE
+				
 				// replace the referenceNode TEXT with an anchor node
 				newLink = node.ownerDocument.createElement('A');				
 				node.parentNode.replaceChild(newLink, referenceNode);				
@@ -58,11 +62,46 @@ bibly.className = 'bibly_reference';
 				newLink.setAttribute('href', 'http://bib.ly/' + shortenedRef);
 				newLink.setAttribute('title', 'Read ' + refText);
 				
+				*/
+				
 				return newLink;
 			} else {
 				return node;
 			}
-		};
+		},
+		parseReferenceMatch = function(node, referenceNode) {
+			var 
+				newLink,
+				shortenedRef,
+				commaIndex = referenceNode.textContent.indexOf(','),
+				semiColonIndex = referenceNode.textContent.indexOf(';'),
+				separatorIndex = (commaIndex > 0 && semiColonIndex > 0) ? Math.min(commaIndex, semiColonIndex) : Math.max(commaIndex, semiColonIndex),
+				separator,
+				remainder;
+				
+			if (separatorIndex > 0) {
+				separator = referenceNode.splitText(separatorIndex);
+				remainder = separator.splitText(1);
+			}
+			
+			// replace the referenceNode TEXT with an anchor node
+			newLink = node.ownerDocument.createElement('A');				
+			node.parentNode.replaceChild(newLink, referenceNode);				
+			
+			// setup reference node attributes				
+			refText = referenceNode.textContent;
+			shortenedRef = refText.replace(/\s/ig,'').replace(/:/ig,'.').replace(/–/ig,'-');				
+			newLink.setAttribute('href', 'http://bib.ly/' + shortenedRef);
+			newLink.setAttribute('title', 'Read ' + refText);					
+			newLink.setAttribute('class', bibly.className);
+			newLink.appendChild(referenceNode);
+			
+			if (remainder) {				
+				newLink = parseReferenceMatch(node, remainder);				
+			}	
+			
+			return newLink;
+		}
 	
 	function parseDocument() {
 		traverseDOM(document.body, 1, textHandler);
