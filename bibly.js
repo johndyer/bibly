@@ -73,7 +73,7 @@ bible.Books = [
 	verses: [22, 13, 26, 21, 27, 30, 21, 22, 35, 22, 20, 25, 28, 22, 35, 22, 16, 21, 29, 29, 34, 30, 17, 25, 6, 14, 23, 28, 25, 31, 40, 22, 33, 37, 16, 33, 24, 41, 30, 24, 34, 17]
 },
 {
-	names: ['Psalm', 'Ps', 'Psa'],
+	names: ['Psalm', 'Ps', 'Psa', 'Pss'],
 	verses: [6, 12, 8, 8, 12, 10, 17, 9, 20, 18, 7, 8, 6, 7, 5, 11, 15, 50, 14, 9, 13, 31, 6, 10, 22, 12, 14, 9, 11, 12, 24, 11, 22, 22, 28, 12, 40, 22, 13, 17, 13, 11, 5, 26, 17, 11, 9, 14, 20, 23, 19, 9, 6, 7, 23, 13, 11, 11, 17, 12, 8, 12, 11, 10, 13, 20, 7, 35, 36, 5, 24, 20, 28, 23, 10, 12, 20, 72, 13, 19, 16, 8, 18, 12, 13, 17, 7, 18, 52, 17, 16, 15, 5, 23, 11, 13, 12, 9, 9, 5, 8, 28, 22, 35, 45, 48, 43, 13, 31, 7, 10, 10, 9, 8, 18, 19, 2, 29, 176, 7, 8, 9, 4, 8, 5, 6, 5, 6, 8, 8, 3, 18, 3, 3, 21, 26, 9, 8, 24, 13, 10, 7, 12, 15, 21, 10, 20, 14, 9, 6]
 },
 {
@@ -324,7 +324,7 @@ bible.parseReference = function (textReference) {
 			if (!startedNumber)
 				continue;
 
-			if (c == '-') {
+			if (c == '-' || c == '–') {
 				afterRange = true;
 				afterSeparator = false;
 			} else if (c == ':' || c == ',' || c == '.') {
@@ -470,7 +470,7 @@ bible.Reference = function () {
 
 		toShortUrl: function () {
 			if (this.bookIndex < 0 || this.bookIndex >= bible.Books.length) return "invalid";
-			return 'http://bib.ly/' + bible.Books[this.bookIndex].names[0] + this.chapterAndVerse('.','-','-');
+			return 'http://bib.ly/' + bible.Books[this.bookIndex].names[1] + this.chapterAndVerse('.','-','-');
 		}
 	}
 };
@@ -481,7 +481,7 @@ bible.utility = {};
 // adapted from old scripturizer.js code
 
 var bibly = (window.bibly) ? window.bibly : {};
-bibly.version = '0.3';
+bibly.version = '0.4.dev';
 bibly.max_nodes =  500;
 bibly.className = 'bibly_reference';
 
@@ -490,13 +490,10 @@ bibly.className = 'bibly_reference';
 	// book names list	
     var 
 		bok = bible.genNames(),
-		ver =  '\\d+(:\\d+)?(?:\\s?[-–&]\\s?\\d+)?',  // 1 OR 1:1 OR 1:1-2
-		ver2 = '\\d+:\\d+(?:\\s?[-–&]\\s?\\d+)?',     // NOT 1, 1:1 OR 1:1-2
-		regexPattern = '\\b('+bok+')\.?\\s+('+ver+'(?:\\s?,\\s?'+ver+')*)'+'(?:\\s?;\\s?'+ver2+')*\\b',
+		ver =  '(\\d+)(:(\\d+))?(\\s?[-–&]\\s?(\\d+))?',  // 1 OR 1:1 OR 1:1-2
+		regexPattern = '\\b('+bok+')\.?\\s+('+ver+'(?:\\s?[,;]\\s?'+ver+')*)\\b',
 		referenceRegex = new RegExp(regexPattern, 'm'),
-		verseRegex = new RegExp('^\\d+$', 'm'),
-		chapterVerseRegex = new RegExp('(:?\\d+):(:?\\d+)','m'),
-		chapterVerseVerseRegex = new RegExp('^(:?\\d+):(:?\\d+)[-–&](:?\\d+)$', 'm'),
+		verseRegex = new RegExp(ver, 'm'),
 		skipRegex = /^(a|script|style|textarea)$/i,
 		lastReference = null,
 		textHandler = function(node) {
@@ -579,29 +576,53 @@ bibly.className = 'bibly_reference';
 				// single verse match (3)
 				match = verseRegex.exec(refText);				
 				if (match) {				
-					lastReference.verse1 = parseInt(match[0],10);
+					
+					
+					if (
+						// single verse (1)
+						typeof match[1] != 'undefined' && 
+						typeof match[3] == 'undefined' && 
+						typeof match[5] == 'undefined') {
+											
+						lastReference.verse1 = parseInt(match[1],10);
+						lastReference.chapter2 = -1;
+						lastReference.verse2 = -1;
+					
+					} else if (
+						// 1:2
+						typeof match[1] != 'undefined' && 
+						typeof match[3] != 'undefined' && 
+						typeof match[5] == 'undefined') {
+						
+						lastReference.chapter1 = parseInt(match[1],10);
+						lastReference.verse1 = parseInt(match[3],10);
+						lastReference.chapter2 = -1;
+						lastReference.verse2 = -1;		
+					
+					} else if (
+						// 1:2-3
+						typeof match[1] != 'undefined' && 
+						typeof match[3] != 'undefined' && 
+						typeof match[5] != 'undefined') {
+						
+						lastReference.chapter1 = parseInt(match[1],10);
+						lastReference.verse1 = parseInt(match[3],10);
+						lastReference.chapter2 = -1;
+						lastReference.verse2 = parseInt(match[5],10);;		
+					} else if (
+						// 1-2
+						typeof match[1] != 'undefined' && 
+						typeof match[3] == 'undefined' && 
+						typeof match[5] != 'undefined') {
+						
+						lastReference.verse1 = parseInt(match[1],10);
+						lastReference.chapter2 = -1;
+						lastReference.verse2 = parseInt(match[5],10);;		
+					}
+					
 					return lastReference;
 				}
-				
-				// chapter:verse match (2:3)
-				match = chapterVerseRegex.exec(refText);				
-				if (match) {				
-					lastReference.chapter1 = parseInt(match[1],10);
-					lastReference.verse1 = parseInt(match[2],10);
-					lastReference.chapter2 = -1;
-					lastReference.verse2 = -1;
-					return lastReference;
-				}	
-
-				// chapter:verse match (2:3-4)
-				match = chapterVerseVerseRegex.exec(refText);				
-				if (match) {				
-					lastReference.chapter1 = parseInt(match[1],10);
-					lastReference.verse1 = parseInt(match[2],10);
-					lastReference.chapter2 = -1;
-					lastReference.verse2 = parseInt(match[3],10);
-					return lastReference;
-				}							
+											
 			
 				// failure
 				return {
