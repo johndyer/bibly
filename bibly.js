@@ -481,7 +481,7 @@ bible.utility = {};
 // adapted from old scripturizer.js code
 
 var bibly = (window.bibly) ? window.bibly : {};
-bibly.version = '0.4.dev';
+bibly.version = '0.3.1';
 bibly.max_nodes =  500;
 bibly.className = 'bibly_reference';
 
@@ -576,7 +576,6 @@ bibly.className = 'bibly_reference';
 				// single verse match (3)
 				match = verseRegex.exec(refText);				
 				if (match) {				
-					
 					
 					if (
 						// single verse (1)

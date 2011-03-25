@@ -2,8 +2,14 @@ import sys
 import os
 import shutil
 
+
+bibly_files = []
+bibly_files.append('bible.js')
+bibly_files.append('bible.reference.js')
+bibly_files.append('bibly.js')
+
 bibly_filename = 'bibly'
-bibly_version = '0.3'
+bibly_version = '0.3.1'
 bibly_version_path = 'build/' + bibly_version + '/'
 bibly_active_path = 'build/'
 
@@ -15,9 +21,21 @@ if os.path.exists(bibly_version_path) == 0:
 biblyjs = bibly_filename + '.js'
 biblyjs_min = bibly_filename + '.min.js'
 
-shutil.copy2(biblyjs, bibly_version_path + biblyjs)
+# combind files
+code = ''
+for item in bibly_files:
+	src_file = open(item,'r')
+	code += src_file.read() + "\n"
+
+# write to output
+tmp_file = open(bibly_version_path + biblyjs,'w')
+tmp_file.write(code)
+tmp_file.close()
+
+# copy versioned file to active path
 shutil.copy2(bibly_version_path + biblyjs, bibly_active_path + biblyjs)
 
+# create minified and copy it
 os.system('java -jar compiler.jar --js ' + biblyjs + ' --js_output_file ' + bibly_version_path + biblyjs_min)
 shutil.copy2(bibly_version_path + biblyjs_min , bibly_active_path + biblyjs_min)
 
