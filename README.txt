@@ -1,3 +1,6 @@
+0.3.1 (2011/03/24)
+- fixed some verse parsing after ; and , with -
+
 0.3 (2001/03/24)
 - added reference parsing and correction
 - fully formats all sub references and individual links
