@@ -10,7 +10,7 @@
 			className: 'bibly_reference',
 			enablePopups: true,
 			popupVersion: 'NET',
-			linkVersion: 'kjv'
+			linkVersion: ''
 		},	
 		bok = bible.genNames(),
 		ver =  '(\\d+)(:(\\d+))?(\\s?[-–&]\\s?(\\d+))?',  // 1 OR 1:1 OR 1:1-2
@@ -81,8 +81,11 @@
 			newLink.setAttribute('rel', reference.toString());
 			newLink.setAttribute('class', bibly.className);
 			newLink.appendChild(referenceNode);
-			newLink.onmouseover = handleLinkMouseOver;
-			newLink.onmouseout = handleLinkMouseOut;
+			
+			if (bibly.enablePopups) {
+				addEvent(newLink,'mouseover', handleLinkMouseOver);
+				addEvent(newLink,'mouseout', handleLinkMouseOut);
+			}
 			
 			// if there was a separator, now parse the stuff after it
 			if (remainder) {				
@@ -204,7 +207,7 @@
 			switch (v) {
 				default:
 				case 'NET':
-					for (var i=0,il=d.length; i<il; i++) {
+					for (var i=0,il=d.length; i<il && i<4; i++) {
 						text += '<span class="bibly_verse_number">' + d[i].verse + '</span> ' + d[i].text + ' ';
 					}
 					break;
@@ -226,7 +229,8 @@
 				p = bibly.popup,
 				pos = getPosition(target),
 				x = y = 0,
-				ref = target.getAttribute('rel');
+				ref = target.getAttribute('rel'),
+				viewport = windowSize();
 			
 			p.outer.style.display = 'block';
 			p.header.innerHTML = ref + ' (' + bibly.popupVersion + ')';
@@ -236,7 +240,9 @@
 			
 			if (x < 0) {
 				x = 0;
-			} /* else if (x + p.outer.clientWidth >  */
+			} else if (x + p.outer.clientWidth > viewport.width) {
+				x = viewport.width - p.outer.clientWidth - 10;
+			}
 			
 			if (y < 0) {
 				y = 0;
@@ -292,6 +298,44 @@
 			
 			return {left:curleft,top:curtop,leftScroll:curleftscroll,topScroll:curtopscroll};
 		},
+		windowSize= function() {
+			var width = 0, 
+				height = 0;
+			if( typeof( window.innerWidth ) == 'number' ) {
+				// Non-IE
+				width = window.innerWidth;
+				height = window.innerHeight;
+			} else if( document.documentElement && ( document.documentElement.clientWidth || document.documentElement.clientHeight ) ) {
+				//IE 6+ in 'standards compliant mode'
+				width = document.documentElement.clientWidth;
+				height = document.documentElement.clientHeight;
+			} else if( document.body && ( document.body.clientWidth || document.body.clientHeight ) ) {
+				//IE 4 compatible
+				width = document.body.clientWidth;
+				height = document.body.clientHeight;
+			}
+			
+			return {width:width, height: height};
+		},
+		getScrollXY = function () {
+			var scrOfX = 0, 
+				scrOfY = 0;
+			if( document.body && ( document.body.scrollLeft || document.body.scrollTop ) ) {
+				//DOM compliant
+				scrOfY = document.body.scrollTop;
+				scrOfX = document.body.scrollLeft;
+			} else if( document.documentElement && ( document.documentElement.scrollLeft || document.documentElement.scrollTop ) ) {
+				//IE6 standards compliant mode
+				scrOfY = document.documentElement.scrollTop;
+				scrOfX = document.documentElement.scrollLeft;
+			} else if( typeof( window.pageYOffset ) == 'number' ) {
+				//Netscape compliant
+				scrOfY = window.pageYOffset;
+				scrOfX = window.pageXOffset;
+			}
+			
+			return {x: scrOfX, u:scrOfY };
+		}
 		isStarted = false,
 		startBibly = function() {
 			
