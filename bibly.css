@@ -12,7 +12,7 @@
 </div>
 */
 
-.bibly_popup_container {
+.bibly_popup_outer  {
 	/* positioning */
 	position: absolute;
 	top: 0;
@@ -52,12 +52,45 @@
 	
 	line-height: 1.4em;
 }
-.bibly_popup_footer {	
+.bibly_popup_footer {
+}
+.bibly_popup_arrow {	
+	position: absolute;
+	bottom: -9px;
+	left: 115px;
+	
+	width: 1px;
+	height: 1px;
+	
+	border: solid 30px #ffffff;
+	border-width: 10px 15px 0 15px;
+	border-color: #ffffff transparent transparent transparent;
+}
+.bibly_popup_arrowborder{	
+	position: absolute;
+	bottom: -10px;
+	left: 115px;
+	
+	width: 1px;
+	height: 1px;
+	
+	border: solid 30px #000000;
+	border-width: 10px 15px 0 15px;
+	border-color: #000000 transparent transparent transparent;	
 }
 
-.bibly_verse_number {
+.bibly_popup_content p {
+	display: inline;
+}
+.bibly_popup_content p:first-child {
+	display: none;
+}
+
+.bibly_verse_number, .bibly_popup_content sup {
 	font-size: 9px;
 	color: #666;
 	top: -3px;
+	vertical-align: baseline;
 	position: relative;
+	margin-right: 2px;
 }
