@@ -99,7 +99,8 @@
 			var 
 				text = refText,
 				reference = new bible.Reference(text),
-				match = null;
+				match = null,
+				p1, p3, p5;
 			
 			if (reference != null && typeof reference.isValid != 'undefined' && reference.isValid()) {
 				lastReference = reference;
@@ -110,6 +111,51 @@
 				match = verseRegex.exec(refText);				
 				if (match) {				
 					
+					p1 = parseInt(match[1],10);
+					p3 = parseInt(match[3],10);
+					p5 = parseInt(match[5],10);
+					if (isNaN(p3)) {
+						p3 = 0;
+					}
+					if (isNaN(p5)) {
+						p5 = 0;
+					}
+					if (
+						// single verse (1)
+						p3 == 0 && p5 == 0) {
+											
+						lastReference.verse1 = parseInt(match[1],10);
+						lastReference.chapter2 = -1;
+						lastReference.verse2 = -1;
+					
+					} else if (
+						// 1:2
+						p3 != 0 && p5 == 0) {
+						
+						lastReference.chapter1 = parseInt(match[1],10);
+						lastReference.verse1 = parseInt(match[3],10);
+						lastReference.chapter2 = -1;
+						lastReference.verse2 = -1;		
+					
+					} else if (
+						// 1:2-3
+						p3 != 0 && p5 != 0) {
+						
+						lastReference.chapter1 = parseInt(match[1],10);
+						lastReference.verse1 = parseInt(match[3],10);
+						lastReference.chapter2 = -1;
+						lastReference.verse2 = parseInt(match[5],10);;		
+					} else if (
+						// 1-2
+						p3 == 0 && p5 != 0) {
+						
+						lastReference.verse1 = parseInt(match[1],10);
+						lastReference.chapter2 = -1;
+						lastReference.verse2 = parseInt(match[5],10);;		
+					}					
+					
+					
+					/*
 					if (
 						// single verse (1)
 						typeof match[1] != 'undefined' && 
@@ -151,6 +197,7 @@
 						lastReference.chapter2 = -1;
 						lastReference.verse2 = parseInt(match[5],10);;		
 					}
+					*/
 					
 					return lastReference;
 				}
@@ -193,10 +240,9 @@
 					break;
 				case 'KJV':
 				case 'LEB':
-					jsonp('http://api.biblia.com/v1/bible/content/' + v + '.txt.json?key=436e02d01081d28a78a45d65f66f4416&passage=' + encodeURIComponent(reference), callback);
+					jsonp('http://api.biblia.com/v1/bible/content/' + v + '.html.json?style=oneVersePerLine&key=436e02d01081d28a78a45d65f66f4416&passage=' + encodeURIComponent(reference), callback);
 					break;
 			} 
-			//jsonp('http://api.biblia.com/v1/bible/content/LEB.txt.json?key=436e02d01081d28a78a45d65f66f4416&passage=' + encodeURIComponent(reference), callback);
 		},		
 		handleBibleText = function(d) {
 			var 
@@ -208,7 +254,7 @@
 				default:
 				case 'NET':
 					for (var i=0,il=d.length; i<il && i<4; i++) {
-						text += '<span class="bibly_verse_number">' + d[i].verse + '</span> ' + d[i].text + ' ';
+						text += '<span class="bibly_verse_number">' + d[i].verse + '</span>' + d[i].text + ' ';
 					}
 					break;
 				case 'KJV':
@@ -236,7 +282,7 @@
 			p.header.innerHTML = ref + ' (' + bibly.popupVersion + ')';
 			p.content.innerHTML = 'Loading...<br/><br/><br/>';
 			x = pos.left - (p.outer.clientWidth/2) + (target.clientWidth/2);
-			y = pos.top - p.outer.clientHeight;
+			y = pos.top - p.outer.clientHeight - 10; // for the arrow
 			
 			if (x < 0) {
 				x = 0;
@@ -246,17 +292,17 @@
 			
 			if (y < 0) {
 				y = 0;
-			} /* else if (x + p.outer.clientWidth >  */			
+			} /* else if (x + p.outer.clientWidth >  */
 						
 			p.outer.style.top = y + 'px';
-			p.outer.style.left = x+ 'px';	
+			p.outer.style.left = x + 'px';	
 			
 			getBibleText(ref, function(d) {
 				// handle the various JSON outputs
 				handleBibleText(d);
 				
 				// reposition the popup
-				y = pos.top - p.outer.clientHeight;
+				y = pos.top - p.outer.clientHeight - 10; // border
 				p.outer.style.top = y + 'px';
 				
 			});			
@@ -345,27 +391,27 @@
 			
 			// create popup
 			var p = bibly.popup = {
-				outer: document.createElement('div'), 
-				header: document.createElement('div'), 
-				content: document.createElement('div'), 
-				footer: document.createElement('div')
+					outer: document.createElement('div')
+				}, 
+				parts = ['header','content','footer','arrowborder','arrow'],
+				i,
+				il,
+				div,
+				name;
+			p.outer.setAttribute('class','bibly_popup_outer');
+			// build all the parts	
+			for (var i=0,il=parts.length; i<il; i++) {
+				name = parts[i];
+				div = document.createElement('div');
+				div.setAttribute('class','bibly_popup_' + name);
+				p.outer.appendChild(div);
+				p[name] = div;
 			}
-				
-			p.outer.setAttribute('class','bibly_popup_container');
-			p.header.setAttribute('class','bibly_popup_header'); 
-			p.content.setAttribute('class','bibly_popup_content');
-			p.footer.setAttribute('class','bibly_popup_footer');		
-
-			p.outer.appendChild(p.header);
-			p.outer.appendChild(p.content);
-			p.outer.appendChild(p.footer);
 			
 			document.body.appendChild(p.outer);	
 			
 			addEvent(p.outer,'mouseover',handlePopupMouseOver);
 			addEvent(p.outer,'mouseout',handlePopupMouseOut);
-			//p.outer.onmouseover = handlePopupMouseOver;
-			//p.outer.onmouseout = handlePopupMouseOut;
 				
 			// build document
 			traverseDOM(document.body, 1, textHandler);
