@@ -2,15 +2,16 @@
 
 // adapted from old scripturizer.js code
 
-var bibly = (window.bibly) ? window.bibly : {};
-bibly.version = '0.4';
-bibly.max_nodes =  500;
-bibly.className = 'bibly_reference';
-
 (function() {
-
 	// book names list	
-    var 
+	var bibly = {
+			version: '0.5',
+			max_nodes:  500,
+			className: 'bibly_reference',
+			enablePopups: true,
+			popupVersion: 'NET',
+			linkVersion: 'kjv'
+		},	
 		bok = bible.genNames(),
 		ver =  '(\\d+)(:(\\d+))?(\\s?[-–&]\\s?(\\d+))?',  // 1 OR 1:1 OR 1:1-2
 		ver2 =  '(\\d+):(\\d+)(\\s?[-–&]\\s?(\\d+))?',  // NOT 1 OR 1:1 OR 1:1-2 (this is needed so verses after semi-colons require a :. Problem John 3:16; 2 Cor 3:3 <-- the 2 will be a verse)
@@ -75,7 +76,7 @@ bibly.className = 'bibly_reference';
 			node.parentNode.replaceChild(newLink, referenceNode);			
 			refText = referenceNode.nodeValue;	
 			reference = parseRefText(refText);
-			newLink.setAttribute('href', reference.toShortUrl());
+			newLink.setAttribute('href', reference.toShortUrl() + (bibly.linkVersion != '' ? '.' + bibly.linkVersion : ''));
 			newLink.setAttribute('title', 'Read ' + reference.toString());
 			newLink.setAttribute('rel', reference.toString());
 			newLink.setAttribute('class', bibly.className);
@@ -181,8 +182,40 @@ bibly.className = 'bibly_reference';
 			document.body.appendChild(script);
 		},
 		getBibleText = function(reference, callback) {
-			jsonp('http://api.biblia.com/v1/bible/content/LEB.txt.json?key=436e02d01081d28a78a45d65f66f4416&passage=' + encodeURIComponent(reference), callback);
+			var v = bibly.popupVersion.toUpperCase();
+			switch (v) {
+				default:
+				case 'NET':
+					jsonp('http://labs.bible.org/api/?passage=' + encodeURIComponent(reference) + '&type=json', callback);
+					break;
+				case 'KJV':
+				case 'LEB':
+					jsonp('http://api.biblia.com/v1/bible/content/' + v + '.txt.json?key=436e02d01081d28a78a45d65f66f4416&passage=' + encodeURIComponent(reference), callback);
+					break;
+			} 
+			//jsonp('http://api.biblia.com/v1/bible/content/LEB.txt.json?key=436e02d01081d28a78a45d65f66f4416&passage=' + encodeURIComponent(reference), callback);
 		},		
+		handleBibleText = function(d) {
+			var 
+				v = bibly.popupVersion.toUpperCase(),
+				p = bibly.popup,
+				text = '';
+				
+			switch (v) {
+				default:
+				case 'NET':
+					for (var i=0,il=d.length; i<il; i++) {
+						text += '<span class="bibly_verse_number">' + d[i].verse + '</span> ' + d[i].text + ' ';
+					}
+					break;
+				case 'KJV':
+				case 'LEB':
+					text = d.text;
+					break;
+			}
+			
+			p.content.innerHTML = text;
+		},
 		checkPosTimeout,
 		handleLinkMouseOver = function(e) {
 			if (!e) var e = window.event;
@@ -196,7 +229,7 @@ bibly.className = 'bibly_reference';
 				ref = target.getAttribute('rel');
 			
 			p.outer.style.display = 'block';
-			p.header.innerHTML = ref + ' (KJV)';
+			p.header.innerHTML = ref + ' (' + bibly.popupVersion + ')';
 			p.content.innerHTML = 'Loading...<br/><br/><br/>';
 			x = pos.left - (p.outer.clientWidth/2) + (target.clientWidth/2);
 			y = pos.top - p.outer.clientHeight;
@@ -213,10 +246,14 @@ bibly.className = 'bibly_reference';
 			p.outer.style.left = x+ 'px';	
 			
 			getBibleText(ref, function(d) {
-				p.content.innerHTML = d.text;
+				// handle the various JSON outputs
+				handleBibleText(d);
+				
+				// reposition the popup
 				y = pos.top - p.outer.clientHeight;
 				p.outer.style.top = y + 'px';
-			});
+				
+			});			
 		},
 		handleLinkMouseOut = function(e) {
 			startPositionTimer();
@@ -255,9 +292,13 @@ bibly.className = 'bibly_reference';
 			
 			return {left:curleft,top:curtop,leftScroll:curleftscroll,topScroll:curtopscroll};
 		},
-		
+		isStarted = false,
 		startBibly = function() {
-				
+			
+			if (isStarted)
+				return;				
+			isStarted = true;
+			
 			// create popup
 			var p = bibly.popup = {
 				outer: document.createElement('div'), 
@@ -276,8 +317,11 @@ bibly.className = 'bibly_reference';
 			p.outer.appendChild(p.footer);
 			
 			document.body.appendChild(p.outer);	
-			p.outer.onmouseover = handlePopupMouseOver;
-			p.outer.onmouseout = handlePopupMouseOut;
+			
+			addEvent(p.outer,'mouseover',handlePopupMouseOver);
+			addEvent(p.outer,'mouseout',handlePopupMouseOut);
+			//p.outer.onmouseover = handlePopupMouseOver;
+			//p.outer.onmouseout = handlePopupMouseOut;
 				
 			// build document
 			traverseDOM(document.body, 1, textHandler);
@@ -325,19 +369,26 @@ bibly.className = 'bibly_reference';
 					}
 				}
 			}
-		};
+		}, 
+		addEvent = function(obj,name,fxn) {
+			if (obj.attachEvent) {
+				obj.attachEvent('on' + name, fxn);
+			} else if (obj.addEventListener) {
+				obj.addEventListener(name, fxn, false);
+			} else {
+				var __ = obj['on' + name];
+				obj['on' + name] = function() {
+				   fxn();
+					__();
+				};
+			}			
+		}
 
-    if (window.attachEvent) {
-        window.attachEvent('onload', startBibly);
-    } else if (window.addEventListener) {
-        window.addEventListener('load', startBibly, false);
-    } else {
-        var __onload = window.onload;
-        window.onload = function() {
-           startBibly();
-            __onload();
-        };
-    }	
+	// super cheater version of DOMoade
+	// do whatever happens first
+    addEvent(document,'DOMContentLoaded',startBibly);
+	addEvent(window,'load',startBibly);
 	
-	
+	// export
+	window.bibly = bibly;	
 })();
