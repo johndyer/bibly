@@ -1,3 +1,63 @@
-. bibly_reference {
+/* <a href="http://bib.ly/john3.16" class="bibly_reference">John 3:16 </a>*/
+.bibly_reference {
+	/* white-space: nowrap; keeps the who link together */
+}
+/*
+<div class="bibly_popup_container">
+	<div class="bibly_popup_header">John 3:16</div>
+	<div class="bibly_popup_content">
+		For God...
+	</div>
+	<div class="bibly_popup_footer">John 3:16</div>
+</div>
+*/
 
+.bibly_popup_container {
+	/* positioning */
+	position: absolute;
+	top: 0;
+	left: 0;
+	display: none;
+
+	/* size */
+	width: 250px;		
+	
+	/* style */
+	text-align:left;
+	font-family: Helvetica, Arial, sans-serif;
+	font-size: 12px;	
+	
+	/* gradients */
+	background: #fff;
+
+	/* border radius */
+	border: solid 1px #333;
+	-webkit-border-radius: 2px;
+	   -moz-border-radius: 2px;
+	        border-radius: 2px;
+	
+	/* shadow */
+	-webkit-box-shadow: 0 1px 5px rgba(50,50,50,0.5);
+	   -moz-box-shadow: 0 1px 5px rgba(50,50,50,0.5);
+	        box-shadow: 0 1px 5px rgba(50,50,50,0.5);
+}
+.bibly_popup_header {
+	background: #ccc;
+	padding: 4px 10px;
+	font-weight: bold;
+}
+.bibly_popup_content {
+	padding: 10px;
+	min-height: 40px;
+	
+	line-height: 1.4em;
+}
+.bibly_popup_footer {	
+}
+
+.bibly_verse_number {
+	font-size: 9px;
+	color: #666;
+	top: -3px;
+	position: relative;
 }

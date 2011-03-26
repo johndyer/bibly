@@ -3,7 +3,7 @@
 // adapted from old scripturizer.js code
 
 var bibly = (window.bibly) ? window.bibly : {};
-bibly.version = '0.3.1';
+bibly.version = '0.4';
 bibly.max_nodes =  500;
 bibly.className = 'bibly_reference';
 
@@ -44,12 +44,15 @@ bibly.className = 'bibly_reference';
 			}
 		},
 		createLinksFromNode = function(node, referenceNode) {
+			if (referenceNode.nodeValue == null)
+				return referenceNode;
+		
 			// split up match by ; and , characters and make a unique link for each
 			var 
 				newLink,
 				shortenedRef,
-				commaIndex = referenceNode.textContent.indexOf(','),
-				semiColonIndex = referenceNode.textContent.indexOf(';'),
+				commaIndex = referenceNode.nodeValue.indexOf(','),
+				semiColonIndex = referenceNode.nodeValue.indexOf(';'),
 				separatorIndex = (commaIndex > 0 && semiColonIndex > 0) ? Math.min(commaIndex, semiColonIndex) : Math.max(commaIndex, semiColonIndex),
 				separator,
 				remainder,
@@ -61,7 +64,7 @@ bibly.className = 'bibly_reference';
 				separator = referenceNode.splitText(separatorIndex);
 				
 				startRemainder = 1;
-				while(startRemainder < separator.textContent.length && separator.textContent.substring(startRemainder,startRemainder+1) == ' ')
+				while(startRemainder < separator.nodeValue.length && separator.nodeValue.substring(startRemainder,startRemainder+1) == ' ')
 					startRemainder++;
 				
 				remainder = separator.splitText(startRemainder);
@@ -70,12 +73,15 @@ bibly.className = 'bibly_reference';
 			// replace the referenceNode TEXT with an anchor node
 			newLink = node.ownerDocument.createElement('A');				
 			node.parentNode.replaceChild(newLink, referenceNode);			
-			refText = referenceNode.textContent;	
+			refText = referenceNode.nodeValue;	
 			reference = parseRefText(refText);
 			newLink.setAttribute('href', reference.toShortUrl());
-			newLink.setAttribute('title', 'Read ' + reference.toString());				
+			newLink.setAttribute('title', 'Read ' + reference.toString());
+			newLink.setAttribute('rel', reference.toString());
 			newLink.setAttribute('class', bibly.className);
 			newLink.appendChild(referenceNode);
+			newLink.onmouseover = handleLinkMouseOver;
+			newLink.onmouseout = handleLinkMouseOut;
 			
 			// if there was a separator, now parse the stuff after it
 			if (remainder) {				
@@ -155,61 +161,180 @@ bibly.className = 'bibly_reference';
 					toString: function() {
 						return refText  + " = Can't parse it";
 					}
-				};
-				
+				};				
 			}
-		}
-	
-	function parseDocument() {
-		traverseDOM(document.body, 1, textHandler);
-	}
-	function traverseDOM(node, depth, textHandler) {
-		var count = 0;
+		},
+		jsonp = function(url, callback, jsonpName){  
 			
-		while (node && depth > 0) {
-			count++;
-			if (count >= bibly.max_nodes) {
-				setTimeout(function() { traverseDOM(node, depth, textHandler); }, 50);
-				return;
+			var jsonpName = 'callback' + Math.floor(Math.random()*11);
+				script = document.createElement("script"); 
+		
+			window[jsonpName] = function(d) {
+				callback(d);
 			}
-
-			switch (node.nodeType) {
-				case 1: // ELEMENT_NODE
-					if (!skipRegex.test(node.tagName) && node.childNodes.length > 0) {
-						node = node.childNodes[0];
-						depth ++;
-						continue;
-					}
-					break;
-				case 3: // TEXT_NODE
-				case 4: // CDATA_SECTION_NODE
-					node = textHandler(node);
-					break;
+		
+			url += (url.indexOf("?") > -1 ? '&' : '?') + 'callback=' + jsonpName;			  
+			//url += '&' + new Date().getTime().toString(); // prevent caching        
+						
+			script.setAttribute("src",url);
+			script.setAttribute("type","text/javascript");                
+			document.body.appendChild(script);
+		},
+		getBibleText = function(reference, callback) {
+			jsonp('http://api.biblia.com/v1/bible/content/LEB.txt.json?key=436e02d01081d28a78a45d65f66f4416&passage=' + encodeURIComponent(reference), callback);
+		},		
+		checkPosTimeout,
+		handleLinkMouseOver = function(e) {
+			if (!e) var e = window.event;
+			
+			clearPositionTimer();
+						
+			var target = (e.target) ? e.target : e.srcElement,
+				p = bibly.popup,
+				pos = getPosition(target),
+				x = y = 0,
+				ref = target.getAttribute('rel');
+			
+			p.outer.style.display = 'block';
+			p.header.innerHTML = ref + ' (KJV)';
+			p.content.innerHTML = 'Loading...<br/><br/><br/>';
+			x = pos.left - (p.outer.clientWidth/2) + (target.clientWidth/2);
+			y = pos.top - p.outer.clientHeight;
+			
+			if (x < 0) {
+				x = 0;
+			} /* else if (x + p.outer.clientWidth >  */
+			
+			if (y < 0) {
+				y = 0;
+			} /* else if (x + p.outer.clientWidth >  */			
+						
+			p.outer.style.top = y + 'px';
+			p.outer.style.left = x+ 'px';	
+			
+			getBibleText(ref, function(d) {
+				p.content.innerHTML = d.text;
+				y = pos.top - p.outer.clientHeight;
+				p.outer.style.top = y + 'px';
+			});
+		},
+		handleLinkMouseOut = function(e) {
+			startPositionTimer();
+		},
+		
+		handlePopupMouseOver = function(e) {	
+			clearPositionTimer();
+		},
+		handlePopupMouseOut = function(e) {
+			startPositionTimer();
+		},
+		
+		/* Timer on/off */
+		startPositionTimer = function () {
+			checkPosTimeout = setTimeout(hidePopup, 500);
+		},
+		clearPositionTimer = function() {
+			clearTimeout(checkPosTimeout);
+			delete checkPosTimeout;
+		},
+		hidePopup = function() {
+			var p = bibly.popup;
+			p.outer.style.display = 'none';	
+		},
+		
+		getPosition = function(node) {		
+			var curleft = curtop = curtopscroll = curleftscroll = 0;
+			if (node.offsetParent) {
+				do {
+					curleft += node.offsetLeft;
+					curtop += node.offsetTop;				
+					curleftscroll += node.offsetParent ? node.offsetParent.scrollLeft : 0;
+					curtopscroll += node.offsetParent ? node.offsetParent.scrollTop : 0;
+				} while (node = node.offsetParent);
 			}
+			
+			return {left:curleft,top:curtop,leftScroll:curleftscroll,topScroll:curtopscroll};
+		},
+		
+		startBibly = function() {
+				
+			// create popup
+			var p = bibly.popup = {
+				outer: document.createElement('div'), 
+				header: document.createElement('div'), 
+				content: document.createElement('div'), 
+				footer: document.createElement('div')
+			}
+				
+			p.outer.setAttribute('class','bibly_popup_container');
+			p.header.setAttribute('class','bibly_popup_header'); 
+			p.content.setAttribute('class','bibly_popup_content');
+			p.footer.setAttribute('class','bibly_popup_footer');		
 
-			if (node.nextSibling) {
-				node = node.nextSibling;
-			} else {
-				while (depth > 0) {
-					node = node.parentNode;
-					depth --;
-					if (node.nextSibling) {
-						node = node.nextSibling;
+			p.outer.appendChild(p.header);
+			p.outer.appendChild(p.content);
+			p.outer.appendChild(p.footer);
+			
+			document.body.appendChild(p.outer);	
+			p.outer.onmouseover = handlePopupMouseOver;
+			p.outer.onmouseout = handlePopupMouseOut;
+				
+			// build document
+			traverseDOM(document.body, 1, textHandler);
+			
+			// dummy data
+			p.content.innerHTML = 
+				'<span class="bibly_verse"><span class="bibly_verse_number">16</span> For God so loved the world that he gave his only begotten Son that whosoever believeth in him should not perish but have everlasting life.</span>' + 
+				'<span class="bibly_verse"><span class="bibly_verse_number">17</span> For God sent not his Son into the world to condemn the world but that the world through him might be saved.</span>	';		
+			p.header.innerHTML = 'John 3:16-17';		
+		},
+		traverseDOM = function(node, depth, textHandler) {
+			var count = 0;
+				
+			while (node && depth > 0) {
+				count++;
+				if (count >= bibly.max_nodes) {
+					setTimeout(function() { traverseDOM(node, depth, textHandler); }, 50);
+					return;
+				}
+
+				switch (node.nodeType) {
+					case 1: // ELEMENT_NODE
+						if (!skipRegex.test(node.tagName) && node.childNodes.length > 0) {
+							node = node.childNodes[0];
+							depth ++;
+							continue;
+						}
 						break;
+					case 3: // TEXT_NODE
+					case 4: // CDATA_SECTION_NODE
+						node = textHandler(node);
+						break;
+				}
+
+				if (node.nextSibling) {
+					node = node.nextSibling;
+				} else {
+					while (depth > 0) {
+						node = node.parentNode;
+						depth --;
+						if (node.nextSibling) {
+							node = node.nextSibling;
+							break;
+						}
 					}
 				}
 			}
-		}
-	}	
+		};
 
     if (window.attachEvent) {
-        window.attachEvent('onload', parseDocument);
+        window.attachEvent('onload', startBibly);
     } else if (window.addEventListener) {
-        window.addEventListener('load', parseDocument, false);
+        window.addEventListener('load', startBibly, false);
     } else {
-        __onload = window.onload;
+        var __onload = window.onload;
         window.onload = function() {
-           parseDocument();
+           startBibly();
             __onload();
         };
     }	

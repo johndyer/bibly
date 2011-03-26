@@ -1,3 +1,9 @@
+0.5
+- added linkVersion (for website authors to make all links go to a particular version)
+
+0.4
+- intial hover card release
+
 0.3.1 (2011/03/24)
 - fixed some verse parsing after ; and , with -
 
