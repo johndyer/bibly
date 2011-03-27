@@ -1,5 +1,7 @@
 0.5
 - added linkVersion (for website authors to make all links go to a particular version)
+- added NET
+- dropdown arrow to CSS
 
 0.4
 - intial hover card release
