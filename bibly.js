@@ -5,7 +5,7 @@
 (function() {
 	// book names list	
 	var bibly = {
-			version: '0.5',
+			version: '0.5.1',
 			max_nodes:  500,
 			className: 'bibly_reference',
 			enablePopups: true,
@@ -114,12 +114,14 @@
 					p1 = parseInt(match[1],10);
 					p3 = parseInt(match[3],10);
 					p5 = parseInt(match[5],10);
+					
 					if (isNaN(p3)) {
 						p3 = 0;
 					}
 					if (isNaN(p5)) {
 						p5 = 0;
 					}
+					
 					if (
 						// single verse (1)
 						p3 == 0 && p5 == 0) {
@@ -231,6 +233,15 @@
 			script.setAttribute("type","text/javascript");                
 			document.body.appendChild(script);
 		},
+		getFooter= function(version) {
+			switch (version) {
+				case 'NET':
+					return '<a href="http://bible.org/">NET Bible® copyright ©1996-2006 by Biblical Studies Press, L.L.C.</a>';
+				case 'LEB':					
+				case 'KJV':
+					return version + ' powered by <a href="http://biblia.com/">Biblia</a> web services from <a href="http://www.logos.com/">Logos Bible Software</a>';					
+			}
+		},
 		getBibleText = function(reference, callback) {
 			var v = bibly.popupVersion.toUpperCase();
 			switch (v) {
@@ -281,30 +292,37 @@
 			p.outer.style.display = 'block';
 			p.header.innerHTML = ref + ' (' + bibly.popupVersion + ')';
 			p.content.innerHTML = 'Loading...<br/><br/><br/>';
-			x = pos.left - (p.outer.clientWidth/2) + (target.clientWidth/2);
-			y = pos.top - p.outer.clientHeight - 10; // for the arrow
+			p.footer.innerHTML = getFooter(bibly.popupVersion);
 			
-			if (x < 0) {
-				x = 0;
-			} else if (x + p.outer.clientWidth > viewport.width) {
-				x = viewport.width - p.outer.clientWidth - 10;
+			
+			function positionPopup() {
+				x = pos.left - (p.outer.offsetWidth/2) + (target.offsetWidth/2);
+				y = pos.top - p.outer.clientHeight - 10; // for the arrow
+				
+				if (x < 0) {
+					x = 0;
+				} else if (x + p.outer.clientWidth > viewport.width) {
+					x = viewport.width - p.outer.clientWidth - 20;
+				}
+				
+				if (y < 0) {
+					y = 0;
+				} /* else if (x + p.outer.clientWidth >  */
+							
+				p.outer.style.top = y + 'px';
+				p.outer.style.left = x + 'px';				
 			}
+			positionPopup();
 			
-			if (y < 0) {
-				y = 0;
-			} /* else if (x + p.outer.clientWidth >  */
-						
-			p.outer.style.top = y + 'px';
-			p.outer.style.left = x + 'px';	
 			
 			getBibleText(ref, function(d) {
 				// handle the various JSON outputs
 				handleBibleText(d);
 				
 				// reposition the popup
-				y = pos.top - p.outer.clientHeight - 10; // border
-				p.outer.style.top = y + 'px';
-				
+				//y = pos.top - p.outer.clientHeight - 10; // border
+				//p.outer.style.top = y + 'px';
+				positionPopup();
 			});			
 		},
 		handleLinkMouseOut = function(e) {
