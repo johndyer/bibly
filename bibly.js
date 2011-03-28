@@ -11,6 +11,7 @@
 			enablePopups: true,
 			popupVersion: 'NET',
 			linkVersion: '',
+			autoStart: true,
 			startNodeId: ''
 		},	
 		defaultPopupVersion = 'NET',
@@ -228,7 +229,7 @@
 			return (indexOf > -1) ? v : defaultPopupVersion;
 		},
 		getBibleText = function(reference, callback) {
-			var v = bibly.popupVersion.toUpperCase();
+			var v = getPopupVersion();
 			switch (v) {
 				default:
 				case 'NET':
@@ -242,7 +243,7 @@
 		},		
 		handleBibleText = function(d) {
 			var 
-				v = bibly.popupVersion.toUpperCase(),
+				v = getPopupVersion(),
 				p = bibly.popup,
 				text = '';
 				
@@ -271,14 +272,15 @@
 				p = bibly.popup,
 				pos = getPosition(target),
 				x = y = 0,
+				v = getPopupVersion();
 				ref = target.getAttribute('rel'),
 				viewport = getWindowSize(),
 				scrollPos = getScroll();
 			
 			p.outer.style.display = 'block';
-			p.header.innerHTML = ref + ' (' + bibly.popupVersion + ')';
+			p.header.innerHTML = ref + ' (' + v + ')';
 			p.content.innerHTML = 'Loading...<br/><br/><br/>';
-			p.footer.innerHTML = getFooter(bibly.popupVersion);
+			p.footer.innerHTML = getFooter(v);
 			
 			
 			function positionPopup() {
@@ -430,15 +432,17 @@
 			addEvent(p.outer,'mouseover',handlePopupMouseOver);
 			addEvent(p.outer,'mouseout',handlePopupMouseOut);
 
-			if (bibly.startNodeId != '') {
-				node = document.getElementById(bibly.startNodeId);
+			if (bibly.autoStart) {
+				if (bibly.startNodeId != '') {
+					node = document.getElementById(bibly.startNodeId);
+				}
+				
+				if (node == null) {
+					node = document.body;
+				}
+				
+				scanForReferences(node);
 			}
-			
-			if (node == null) {
-				node = document.body;
-			}
-			
-			scanForReferences(node);
 		},
 		scanForReferences = function(node) {				
 			// build document
@@ -502,6 +506,6 @@
 	addEvent(window,'load',startBibly);
 	
 	// export
-	bibly.run = scanForReferences;
+	bibly.scanForReferences = scanForReferences;
 	window.bibly = bibly;	
 })();
