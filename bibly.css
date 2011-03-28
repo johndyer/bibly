@@ -10,7 +10,7 @@
 	display: none;
 
 	/* size */
-	width: 250px;		
+	width: 270px;		
 	
 	/* style */
 	text-align:left;
@@ -61,7 +61,7 @@
 .bibly_popup_arrowbot {	
 	position: absolute;
 	bottom: -9px;
-	left: 110px;
+	left: 120px;
 	
 	width: 1px;
 	height: 1px;
@@ -73,7 +73,7 @@
 .bibly_popup_arrowbot_border{	
 	position: absolute;
 	bottom: -10px;
-	left: 110px;
+	left: 120px;
 	
 	width: 1px;
 	height: 1px;
@@ -86,7 +86,7 @@
 .bibly_popup_arrowtop {	
 	position: absolute;
 	top: -9px;
-	left: 110px;
+	left: 120px;
 	
 	width: 1px;
 	height: 1px;
@@ -98,7 +98,7 @@
 .bibly_popup_arrowtop_border{	
 	position: absolute;
 	top: -10px;
-	left: 110px;
+	left: 120px;
 	
 	width: 1px;
 	height: 1px;
