@@ -5,12 +5,13 @@
 (function() {
 	// book names list	
 	var bibly = {
-			version: '0.6',
+			version: '0.6.1',
 			max_nodes: 500,
 			className: 'bibly_reference',
 			enablePopups: true,
 			popupVersion: 'NET',
-			linkVersion: ''
+			linkVersion: '',
+			startNodeId: ''
 		},	
 		defaultPopupVersion = 'NET',
 		allowedPopupVersions = ['NET','KJV','LEB','DARBY'],
@@ -157,51 +158,7 @@
 						lastReference.chapter2 = -1;
 						lastReference.verse2 = parseInt(match[5],10);;		
 					}					
-					
-					
-					/*
-					if (
-						// single verse (1)
-						typeof match[1] != 'undefined' && 
-						typeof match[3] == 'undefined' && 
-						typeof match[5] == 'undefined') {
-											
-						lastReference.verse1 = parseInt(match[1],10);
-						lastReference.chapter2 = -1;
-						lastReference.verse2 = -1;
-					
-					} else if (
-						// 1:2
-						typeof match[1] != 'undefined' && 
-						typeof match[3] != 'undefined' && 
-						typeof match[5] == 'undefined') {
-						
-						lastReference.chapter1 = parseInt(match[1],10);
-						lastReference.verse1 = parseInt(match[3],10);
-						lastReference.chapter2 = -1;
-						lastReference.verse2 = -1;		
-					
-					} else if (
-						// 1:2-3
-						typeof match[1] != 'undefined' && 
-						typeof match[3] != 'undefined' && 
-						typeof match[5] != 'undefined') {
-						
-						lastReference.chapter1 = parseInt(match[1],10);
-						lastReference.verse1 = parseInt(match[3],10);
-						lastReference.chapter2 = -1;
-						lastReference.verse2 = parseInt(match[5],10);;		
-					} else if (
-						// 1-2
-						typeof match[1] != 'undefined' && 
-						typeof match[3] == 'undefined' && 
-						typeof match[5] != 'undefined') {
-						
-						lastReference.verse1 = parseInt(match[1],10);
-						lastReference.chapter2 = -1;
-						lastReference.verse2 = parseInt(match[5],10);;		
-					}
-					*/
+									
 					
 					return lastReference;
 				}
@@ -220,26 +177,35 @@
 			}
 		},
 		callbackIndex=100000,
+		jsonpCache = {},
+		enableJsonpCache = true,
 		jsonp = function(url, callback, jsonpName){  
+		
+			// check cache
+			//if (enableJsonpCache && typeof jsonpCache[url] != 'undefined') {
+			//	window[jsonpCache[url]]();
+			//} else {
 			
-			var jsonpName = 'callback' + (callbackIndex++);
-				script = document.createElement("script"); 
-		
-			window[jsonpName] = function(d) {
-				callback(d);
-			}
-		
-			url += (url.indexOf("?") > -1 ? '&' : '?') + 'callback=' + jsonpName;			  
-			//url += '&' + new Date().getTime().toString(); // prevent caching        
-						
-			script.setAttribute("src",url);
-			script.setAttribute("type","text/javascript");                
-			document.body.appendChild(script);
+				var jsonpName = 'callback' + (callbackIndex++);
+					script = document.createElement("script"); 
+			
+				window[jsonpName] = function(d) {
+					callback(d);
+				}
+				jsonpCache[url] = jsonpName;
+			
+				url += (url.indexOf("?") > -1 ? '&' : '?') + 'callback=' + jsonpName;			  
+				//url += '&' + new Date().getTime().toString(); // prevent caching        
+							
+				script.setAttribute("src",url);
+				script.setAttribute("type","text/javascript");                
+				document.body.appendChild(script);
+			//}
 		},
 		getFooter= function(version) {
 			switch (version) {
 				case 'NET':
-					return '<a href="http://bible.org/">NET Bible® copyright ©1996-2006 by Biblical Studies Press, L.L.C.</a>';
+					return '<a href="http://bible.org/">NET Bible® copyright ©1996-2006 by Biblical Studies Press, LLC</a>';
 				case 'LEB':					
 				case 'KJV':
 					return version + ' powered by <a href="http://biblia.com/">Biblia</a> web services from <a href="http://www.logos.com/">Logos Bible Software</a>';					
@@ -446,7 +412,9 @@
 				i,
 				il,
 				div,
-				name;
+				name,
+				node = null;
+				
 			p.outer.className = 'bibly_popup_outer';
 			// build all the parts	
 			for (var i=0,il=parts.length; i<il; i++) {
@@ -461,15 +429,20 @@
 			
 			addEvent(p.outer,'mouseover',handlePopupMouseOver);
 			addEvent(p.outer,'mouseout',handlePopupMouseOut);
-				
-			// build document
-			traverseDOM(document.body, 1, textHandler);
+
+			if (bibly.startNodeId != '') {
+				node = document.getElementById(bibly.startNodeId);
+			}
 			
-			// dummy data
-			p.content.innerHTML = 
-				'<span class="bibly_verse"><span class="bibly_verse_number">16</span> For God so loved the world that he gave his only begotten Son that whosoever believeth in him should not perish but have everlasting life.</span>' + 
-				'<span class="bibly_verse"><span class="bibly_verse_number">17</span> For God sent not his Son into the world to condemn the world but that the world through him might be saved.</span>	';		
-			p.header.innerHTML = 'John 3:16-17';		
+			if (node == null) {
+				node = document.body;
+			}
+			
+			scanForReferences(node);
+		},
+		scanForReferences = function(node) {				
+			// build document
+			traverseDOM(node, 1, textHandler);		
 		},
 		traverseDOM = function(node, depth, textHandler) {
 			var count = 0;
@@ -529,5 +502,6 @@
 	addEvent(window,'load',startBibly);
 	
 	// export
+	bibly.run = scanForReferences;
 	window.bibly = bibly;	
 })();
