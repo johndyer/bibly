@@ -482,17 +482,17 @@ bible.utility = {};
 (function() {
 	// book names list	
 	var bibly = {
-			version: '0.6.2',
+			version: '0.6.1',
 			maxNodes: 500,
 			className: 'bibly_reference',
 			enablePopups: true,
-			popupVersion: 'ESV',
+			popupVersion: 'NET',
 			linkVersion: '',
 			autoStart: true,
 			startNodeId: ''
 		},	
 		defaultPopupVersion = 'NET',
-		allowedPopupVersions = ['NET','ESV','KJV','LEB','DARBY'],
+		allowedPopupVersions = ['NET','KJV','LEB','DARBY'],
 		bok = bible.genNames(),
 		ver =  '(\\d+)(:(\\d+))?(\\s?[-–&]\\s?(\\d+))?',  // 1 OR 1:1 OR 1:1-2
 		ver2 =  '(\\d+):(\\d+)(\\s?[-–&]\\s?(\\d+))?',  // NOT 1 OR 1:1 OR 1:1-2 (this is needed so verses after semi-colons require a :. Problem John 3:16; 2 Cor 3:3 <-- the 2 will be a verse)
@@ -684,8 +684,6 @@ bible.utility = {};
 			switch (version) {
 				case 'NET':
 					return '<a href="http://bible.org/">NET Bible® copyright ©1996-2006 by Biblical Studies Press, LLC</a>';
-				case 'ESV':
-					return 'English Standard Version. Copyright &copy;2001 by <a href="http://www.crosswaybibles.org">Crossway Bibles</a>';
 				case 'LEB':					
 				case 'KJV':
 					return version + ' powered by <a href="http://biblia.com/">Biblia</a> web services from <a href="http://www.logos.com/">Logos Bible Software</a>';					
@@ -718,9 +716,6 @@ bible.utility = {};
 				case 'LEB':
 					jsonp('http://api.biblia.com/v1/bible/content/' + v + '.html.json?style=oneVersePerLine&key=436e02d01081d28a78a45d65f66f4416&passage=' + encodeURIComponent(reference), callback);
 					break;
-				case 'ESV':
-					jsonp('http://www.esvapi.org/crossref/ref.php?reference=' + encodeURIComponent(reference), callback);
-					break;					
 			} 
 		},		
 		handleBibleText = function(d) {
@@ -740,12 +735,9 @@ bible.utility = {};
 				case 'LEB':
 					text = d.text;
 					break;
-				case 'ESV':
-					text = d.content;
-					break;					
 			}
 			
-			p.content.innerHTML = '<div class="' + v + '-version">' + text + '</div>';
+			p.content.innerHTML = text;
 		},
 		checkPosTimeout,
 		handleLinkMouseOver = function(e) {
