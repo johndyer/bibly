@@ -5,13 +5,15 @@
 (function() {
 	// book names list	
 	var bibly = {
-			version: '0.5.1',
-			max_nodes:  500,
+			version: '0.6',
+			max_nodes: 500,
 			className: 'bibly_reference',
 			enablePopups: true,
 			popupVersion: 'NET',
 			linkVersion: ''
 		},	
+		defaultPopupVersion = 'NET',
+		allowedPopupVersions = ['NET','KJV','LEB','DARBY'],
 		bok = bible.genNames(),
 		ver =  '(\\d+)(:(\\d+))?(\\s?[-–&]\\s?(\\d+))?',  // 1 OR 1:1 OR 1:1-2
 		ver2 =  '(\\d+):(\\d+)(\\s?[-–&]\\s?(\\d+))?',  // NOT 1 OR 1:1 OR 1:1-2 (this is needed so verses after semi-colons require a :. Problem John 3:16; 2 Cor 3:3 <-- the 2 will be a verse)
@@ -217,9 +219,10 @@
 				};				
 			}
 		},
+		callbackIndex=100000,
 		jsonp = function(url, callback, jsonpName){  
 			
-			var jsonpName = 'callback' + Math.floor(Math.random()*11);
+			var jsonpName = 'callback' + (callbackIndex++);
 				script = document.createElement("script"); 
 		
 			window[jsonpName] = function(d) {
@@ -241,6 +244,22 @@
 				case 'KJV':
 					return version + ' powered by <a href="http://biblia.com/">Biblia</a> web services from <a href="http://www.logos.com/">Logos Bible Software</a>';					
 			}
+		},
+		getPopupVersion = function() {
+			var v = bibly.popupVersion.toUpperCase(), 
+				indexOf=-1, 
+				i=0, 
+				il=allowedPopupVersions.length;
+			
+			// old IEs don't have Array.indexOf
+			for (; i < il; i++) {
+			  if (allowedPopupVersions[i].toUpperCase() === v) {
+				indexOf = i;
+				break;
+			  }
+			}
+
+			return (indexOf > -1) ? v : defaultPopupVersion;
 		},
 		getBibleText = function(reference, callback) {
 			var v = bibly.popupVersion.toUpperCase();
@@ -287,7 +306,8 @@
 				pos = getPosition(target),
 				x = y = 0,
 				ref = target.getAttribute('rel'),
-				viewport = windowSize();
+				viewport = getWindowSize(),
+				scrollPos = getScroll();
 			
 			p.outer.style.display = 'block';
 			p.header.innerHTML = ref + ' (' + bibly.popupVersion + ')';
@@ -297,7 +317,7 @@
 			
 			function positionPopup() {
 				x = pos.left - (p.outer.offsetWidth/2) + (target.offsetWidth/2);
-				y = pos.top - p.outer.clientHeight - 10; // for the arrow
+				y = pos.top - p.outer.clientHeight; // for the arrow
 				
 				if (x < 0) {
 					x = 0;
@@ -305,10 +325,21 @@
 					x = viewport.width - p.outer.clientWidth - 20;
 				}
 				
-				if (y < 0) {
-					y = 0;
-				} /* else if (x + p.outer.clientWidth >  */
-							
+				if (y < 0 || (y < scrollPos.y) ){ // above the screen
+					y = pos.top + target.offsetHeight + 10;
+					p.arrowtop.style.display = 'block';
+					p.arrowtop_border.style.display = 'block';
+					p.arrowbot.style.display = 'none';
+					p.arrowbot_border.style.display = 'none';					
+					
+				} else {
+					y = y-10; 
+					p.arrowtop.style.display = 'none';
+					p.arrowtop_border.style.display = 'none';
+					p.arrowbot.style.display = 'block';
+					p.arrowbot_border.style.display = 'block';					
+				}
+				
 				p.outer.style.top = y + 'px';
 				p.outer.style.left = x + 'px';				
 			}
@@ -362,7 +393,7 @@
 			
 			return {left:curleft,top:curtop,leftScroll:curleftscroll,topScroll:curtopscroll};
 		},
-		windowSize= function() {
+		getWindowSize= function() {
 			var width = 0, 
 				height = 0;
 			if( typeof( window.innerWidth ) == 'number' ) {
@@ -381,7 +412,7 @@
 			
 			return {width:width, height: height};
 		},
-		getScrollXY = function () {
+		getScroll = function () {
 			var scrOfX = 0, 
 				scrOfY = 0;
 			if( document.body && ( document.body.scrollLeft || document.body.scrollTop ) ) {
@@ -398,7 +429,7 @@
 				scrOfX = window.pageXOffset;
 			}
 			
-			return {x: scrOfX, u:scrOfY };
+			return {x: scrOfX, y:scrOfY };
 		}
 		isStarted = false,
 		startBibly = function() {
@@ -411,17 +442,17 @@
 			var p = bibly.popup = {
 					outer: document.createElement('div')
 				}, 
-				parts = ['header','content','footer','arrowborder','arrow'],
+				parts = ['header','content','footer','arrowtop_border','arrowtop','arrowbot_border','arrowbot'],
 				i,
 				il,
 				div,
 				name;
-			p.outer.setAttribute('class','bibly_popup_outer');
+			p.outer.className = 'bibly_popup_outer';
 			// build all the parts	
 			for (var i=0,il=parts.length; i<il; i++) {
 				name = parts[i];
 				div = document.createElement('div');
-				div.setAttribute('class','bibly_popup_' + name);
+				div.className = 'bibly_popup_' + name;
 				p.outer.appendChild(div);
 				p[name] = div;
 			}
