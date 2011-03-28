@@ -1,16 +1,6 @@
-/* <a href="http://bib.ly/john3.16" class="bibly_reference">John 3:16 </a>*/
+
 .bibly_reference {
-	/* white-space: nowrap; keeps the who link together */
 }
-/*
-<div class="bibly_popup_container">
-	<div class="bibly_popup_header">John 3:16</div>
-	<div class="bibly_popup_content">
-		For God...
-	</div>
-	<div class="bibly_popup_footer">John 3:16</div>
-</div>
-*/
 
 .bibly_popup_outer  {
 	/* positioning */
@@ -25,7 +15,8 @@
 	/* style */
 	text-align:left;
 	font-family: Helvetica, Arial, sans-serif;
-	font-size: 12px;	
+	font-size: 12px;
+	line-height: 1em;
 	
 	/* gradients */
 	background: #fff;
@@ -45,6 +36,7 @@
 	background: #305274;
 	padding: 4px 10px;
 	font-weight: bold;
+	line-height: 1.2em;
 	color: #fff;
 	
 	-webkit-text-shadow: 1px 1px 1px rgba(50,50,50,0.5);
@@ -66,7 +58,7 @@
 	color: #666;
 	text-decoration: underline;
 }
-.bibly_popup_arrow {	
+.bibly_popup_arrowbot {	
 	position: absolute;
 	bottom: -9px;
 	left: 110px;
@@ -78,7 +70,7 @@
 	border-width: 10px 15px 0 15px;
 	border-color: #ffffff transparent transparent transparent;
 }
-.bibly_popup_arrowborder{	
+.bibly_popup_arrowbot_border{	
 	position: absolute;
 	bottom: -10px;
 	left: 110px;
@@ -90,6 +82,33 @@
 	border-width: 10px 15px 0 15px;
 	border-color: #000000 transparent transparent transparent;	
 }
+
+.bibly_popup_arrowtop {	
+	position: absolute;
+	top: -9px;
+	left: 110px;
+	
+	width: 1px;
+	height: 1px;
+	
+	border: solid 30px #305274;
+	border-width: 0 15px 10px 15px;
+	border-color: transparent transparent #305274 transparent;
+}
+.bibly_popup_arrowtop_border{	
+	position: absolute;
+	top: -10px;
+	left: 110px;
+	
+	width: 1px;
+	height: 1px;
+	
+	border: solid 30px #000000;
+	border-width: 0 15px 10px 15px;
+	border-color: transparent transparent #000000 transparent;	
+}
+
+
 
 .bibly_popup_content p {
 	display: inline;
