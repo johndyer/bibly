@@ -1,3 +1,19 @@
+0.6.2
+- added ESV as default
+
+0.6.1
+- added some options to only select a particular node
+- added defaults for popup and link versions
+
+0.6
+- updated style (blue header)
+- popup shows below when page is scrolled
+- double checking of versions
+- better IE6 compatibility
+
+0.5.1
+- added copyright notices
+
 0.5
 - added linkVersion (for website authors to make all links go to a particular version)
 - added NET
