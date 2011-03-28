@@ -5,17 +5,17 @@
 (function() {
 	// book names list	
 	var bibly = {
-			version: '0.6.1',
-			max_nodes: 500,
+			version: '0.6.2',
+			maxNodes: 500,
 			className: 'bibly_reference',
 			enablePopups: true,
-			popupVersion: 'NET',
+			popupVersion: 'ESV',
 			linkVersion: '',
 			autoStart: true,
 			startNodeId: ''
 		},	
 		defaultPopupVersion = 'NET',
-		allowedPopupVersions = ['NET','KJV','LEB','DARBY'],
+		allowedPopupVersions = ['NET','ESV','KJV','LEB','DARBY'],
 		bok = bible.genNames(),
 		ver =  '(\\d+)(:(\\d+))?(\\s?[-–&]\\s?(\\d+))?',  // 1 OR 1:1 OR 1:1-2
 		ver2 =  '(\\d+):(\\d+)(\\s?[-–&]\\s?(\\d+))?',  // NOT 1 OR 1:1 OR 1:1-2 (this is needed so verses after semi-colons require a :. Problem John 3:16; 2 Cor 3:3 <-- the 2 will be a verse)
@@ -207,6 +207,8 @@
 			switch (version) {
 				case 'NET':
 					return '<a href="http://bible.org/">NET Bible® copyright ©1996-2006 by Biblical Studies Press, LLC</a>';
+				case 'ESV':
+					return 'English Standard Version. Copyright &copy;2001 by <a href="http://www.crosswaybibles.org">Crossway Bibles</a>';
 				case 'LEB':					
 				case 'KJV':
 					return version + ' powered by <a href="http://biblia.com/">Biblia</a> web services from <a href="http://www.logos.com/">Logos Bible Software</a>';					
@@ -239,6 +241,9 @@
 				case 'LEB':
 					jsonp('http://api.biblia.com/v1/bible/content/' + v + '.html.json?style=oneVersePerLine&key=436e02d01081d28a78a45d65f66f4416&passage=' + encodeURIComponent(reference), callback);
 					break;
+				case 'ESV':
+					jsonp('http://www.esvapi.org/crossref/ref.php?reference=' + encodeURIComponent(reference), callback);
+					break;					
 			} 
 		},		
 		handleBibleText = function(d) {
@@ -258,9 +263,12 @@
 				case 'LEB':
 					text = d.text;
 					break;
+				case 'ESV':
+					text = d.content;
+					break;					
 			}
 			
-			p.content.innerHTML = text;
+			p.content.innerHTML = '<div class="' + v + '-version">' + text + '</div>';
 		},
 		checkPosTimeout,
 		handleLinkMouseOver = function(e) {
@@ -446,14 +454,14 @@
 		},
 		scanForReferences = function(node) {				
 			// build document
-			traverseDOM(node, 1, textHandler);		
+			traverseDOM(node.childNodes[0], 1, textHandler);		
 		},
 		traverseDOM = function(node, depth, textHandler) {
 			var count = 0;
 				
 			while (node && depth > 0) {
 				count++;
-				if (count >= bibly.max_nodes) {
+				if (count >= bibly.maxNodes) {
 					setTimeout(function() { traverseDOM(node, depth, textHandler); }, 50);
 					return;
 				}

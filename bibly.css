@@ -113,14 +113,18 @@
 .bibly_popup_content p {
 	display: inline;
 }
-.bibly_popup_content a {
+.bibly_popup_content .NET-version p:first-child {
 	display: none;
 }
-.bibly_popup_content p:first-child {
+.bibly_popup_content .NET-version a{
+	display: none;
+}
+.bibly_popup_content .ESV-version h2{
 	display: none;
 }
 
-.bibly_verse_number, .bibly_popup_content sup {
+
+.bibly_verse_number, .bibly_popup_content sup, .bibly_popup_content .ESV-version .verse-num {
 	font-size: 9px;
 	color: #666;
 	top: -3px;
