@@ -5,20 +5,21 @@
 (function() {
 	// book names list	
 	var bibly = {
-			version: '0.6.2',
+			version: '0.6.3',
 			maxNodes: 500,
 			className: 'bibly_reference',
 			enablePopups: true,
 			popupVersion: 'ESV',
 			linkVersion: '',
 			autoStart: true,
-			startNodeId: ''
+			startNodeId: '',
+			maxVerses: 4
 		},	
 		defaultPopupVersion = 'NET',
 		allowedPopupVersions = ['NET','ESV','KJV','LEB','DARBY'],
 		bok = bible.genNames(),
-		ver =  '(\\d+)(:(\\d+))?(\\s?[-–&]\\s?(\\d+))?',  // 1 OR 1:1 OR 1:1-2
-		ver2 =  '(\\d+):(\\d+)(\\s?[-–&]\\s?(\\d+))?',  // NOT 1 OR 1:1 OR 1:1-2 (this is needed so verses after semi-colons require a :. Problem John 3:16; 2 Cor 3:3 <-- the 2 will be a verse)
+		ver =  '(\\d+)([\.:](\\d+))?(\\s?[-–&]\\s?(\\d+))?',  // 1 OR 1:1 OR 1:1-2
+		ver2 =  '(\\d+)[\.:](\\d+)(\\s?[-–&]\\s?(\\d+))?',  // NOT 1 OR 1:1 OR 1:1-2 (this is needed so verses after semi-colons require a :. Problem John 3:16; 2 Cor 3:3 <-- the 2 will be a verse)
 		regexPattern = '\\b('+bok+')\.?\\s+('+ver+'((\\s?,\\s?'+ver+')|(\\s?;\\s?'+ver2+'))*)\\b',
 		referenceRegex = new RegExp(regexPattern, 'm'),
 		verseRegex = new RegExp(ver, 'm'),
@@ -230,19 +231,30 @@
 
 			return (indexOf > -1) ? v : defaultPopupVersion;
 		},
-		getBibleText = function(reference, callback) {
-			var v = getPopupVersion();
+		getBibleText = function(refString, callback) {
+			var v = getPopupVersion(),
+				max = bibly.maxVerses,
+				reference = new bible.Reference(refString);
+				
+			// check that it's only 4 verses
+			if (reference.verse1 > 0 && reference.verse2 > 0 && reference.verse2 - reference.verse1 > (max-1)) {
+				reference.verse2 = reference.verse1 + (max-1);
+			} else if (reference.verse1 <= 0 && reference.verse2 <= 0) {
+				reference.verse1 = 1;
+				reference.verse2 = max;
+			}
+					
 			switch (v) {
 				default:
 				case 'NET':
-					jsonp('http://labs.bible.org/api/?passage=' + encodeURIComponent(reference) + '&type=json', callback);
+					jsonp('http://labs.bible.org/api/?passage=' + encodeURIComponent(ref.toString()) + '&type=json', callback);
 					break;
 				case 'KJV':
 				case 'LEB':
-					jsonp('http://api.biblia.com/v1/bible/content/' + v + '.html.json?style=oneVersePerLine&key=436e02d01081d28a78a45d65f66f4416&passage=' + encodeURIComponent(reference), callback);
+					jsonp('http://api.biblia.com/v1/bible/content/' + v + '.html.json?style=oneVersePerLine&key=436e02d01081d28a78a45d65f66f4416&passage=' + encodeURIComponent(reference.toString()), callback);
 					break;
 				case 'ESV':
-					jsonp('http://www.esvapi.org/crossref/ref.php?reference=' + encodeURIComponent(reference), callback);
+					jsonp('http://www.esvapi.org/crossref/ref.php?reference=' + encodeURIComponent(reference.toString()), callback);
 					break;					
 			} 
 		},		
@@ -250,12 +262,13 @@
 			var 
 				v = getPopupVersion(),
 				p = bibly.popup,
+				max = bibly.maxVerses,
 				text = '';
 				
 			switch (v) {
 				default:
 				case 'NET':
-					for (var i=0,il=d.length; i<il && i<4; i++) {
+					for (var i=0,il=d.length; i<il && i<max; i++) {
 						text += '<span class="bibly_verse_number">' + d[i].verse + '</span>' + d[i].text + ' ';
 					}
 					break;
