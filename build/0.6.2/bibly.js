@@ -275,7 +275,7 @@ bible.genNames= function() {
 	
 	return names.join('|');
 }
-﻿bible.parseReference = function (textReference) {
+bible.parseReference = function (textReference) {
 
 	var 
 		bookIndex = -1,
@@ -283,15 +283,14 @@ bible.genNames= function() {
 		verse1 = -1,
 		chapter2 = -1,
 		verse2 = -1,
-		input = new String(textReference).replace('&ndash;','-').replace('–','-'),
+		input = new String(textReference),
 		i, j,
 		afterRange = false,
 		afterSeparator = false,
 		startedNumber = false,
 		currentNumber = '',
 		name,
-		possibleMatch,
-		c;
+		possibleMatch;
 
 
 	// go through all books and test all names
@@ -317,13 +316,13 @@ bible.genNames= function() {
 
 
 	for (i = 0; i < input.length; i++) {
-		c = input.charAt(i);
+		var c = input.charAt(i);
 
 		if (c == ' ' || isNaN(c)) {
 			if (!startedNumber)
 				continue;
 
-			if (c == '-' || c == '–') {
+			if (c == '-' || c == '�') {
 				afterRange = true;
 				afterSeparator = false;
 			} else if (c == ':' || c == ',' || c == '.') {
@@ -423,6 +422,12 @@ bible.Reference = function () {
 		if (arguments.length >= 5) _verse2 = arguments[4];
 	}
 
+	function padLeft(input, length, s) {
+		while (input.length < length)
+			input = s + input;
+		return input;
+	}
+
 	return {
 		bookIndex: _bookIndex,
 		chapter: _chapter1,
@@ -477,21 +482,20 @@ bible.utility = {};
 (function() {
 	// book names list	
 	var bibly = {
-			version: '0.6.3',
+			version: '0.6.2',
 			maxNodes: 500,
 			className: 'bibly_reference',
 			enablePopups: true,
 			popupVersion: 'ESV',
 			linkVersion: '',
 			autoStart: true,
-			startNodeId: '',
-			maxVerses: 4
+			startNodeId: ''
 		},	
 		defaultPopupVersion = 'NET',
 		allowedPopupVersions = ['NET','ESV','KJV','LEB','DARBY'],
 		bok = bible.genNames(),
-		ver =  '(\\d+)([\.:](\\d+))?(\\s?[-–&]\\s?(\\d+))?',  // 1 OR 1:1 OR 1:1-2
-		ver2 =  '(\\d+)[\.:](\\d+)(\\s?[-–&]\\s?(\\d+))?',  // NOT 1 OR 1:1 OR 1:1-2 (this is needed so verses after semi-colons require a :. Problem John 3:16; 2 Cor 3:3 <-- the 2 will be a verse)
+		ver =  '(\\d+)(:(\\d+))?(\\s?[-–&]\\s?(\\d+))?',  // 1 OR 1:1 OR 1:1-2
+		ver2 =  '(\\d+):(\\d+)(\\s?[-–&]\\s?(\\d+))?',  // NOT 1 OR 1:1 OR 1:1-2 (this is needed so verses after semi-colons require a :. Problem John 3:16; 2 Cor 3:3 <-- the 2 will be a verse)
 		regexPattern = '\\b('+bok+')\.?\\s+('+ver+'((\\s?,\\s?'+ver+')|(\\s?;\\s?'+ver2+'))*)\\b',
 		referenceRegex = new RegExp(regexPattern, 'm'),
 		verseRegex = new RegExp(ver, 'm'),
@@ -502,7 +506,9 @@ bible.utility = {};
 				val, 
 				referenceNode, 
 				afterReferenceNode,
-				newLink;
+				newLink,
+				refText,
+				shortenedRef;
 			
 			if (match) {
 				val = match[0];
@@ -526,6 +532,7 @@ bible.utility = {};
 			// split up match by ; and , characters and make a unique link for each
 			var 
 				newLink,
+				shortenedRef,
 				commaIndex = referenceNode.nodeValue.indexOf(','),
 				semiColonIndex = referenceNode.nodeValue.indexOf(';'),
 				separatorIndex = (commaIndex > 0 && semiColonIndex > 0) ? Math.min(commaIndex, semiColonIndex) : Math.max(commaIndex, semiColonIndex),
@@ -648,8 +655,15 @@ bible.utility = {};
 			}
 		},
 		callbackIndex=100000,
-		jsonp = function(url, callback){  
+		jsonpCache = {},
+		enableJsonpCache = true,
+		jsonp = function(url, callback, jsonpName){  
 		
+			// check cache
+			//if (enableJsonpCache && typeof jsonpCache[url] != 'undefined') {
+			//	window[jsonpCache[url]]();
+			//} else {
+			
 				var jsonpName = 'callback' + (callbackIndex++);
 					script = document.createElement("script"); 
 			
@@ -664,7 +678,7 @@ bible.utility = {};
 				script.setAttribute("src",url);
 				script.setAttribute("type","text/javascript");                
 				document.body.appendChild(script);
-			
+			//}
 		},
 		getFooter= function(version) {
 			switch (version) {
@@ -693,30 +707,19 @@ bible.utility = {};
 
 			return (indexOf > -1) ? v : defaultPopupVersion;
 		},
-		getBibleText = function(refString, callback) {
-			var v = getPopupVersion(),
-				max = bibly.maxVerses,
-				reference = new bible.Reference(refString);
-				
-			// check that it's only 4 verses
-			if (reference.verse1 > 0 && reference.verse2 > 0 && reference.verse2 - reference.verse1 > (max-1)) {
-				reference.verse2 = reference.verse1 + (max-1);
-			} else if (reference.verse1 <= 0 && reference.verse2 <= 0) {
-				reference.verse1 = 1;
-				reference.verse2 = max;
-			}
-					
+		getBibleText = function(reference, callback) {
+			var v = getPopupVersion();
 			switch (v) {
 				default:
 				case 'NET':
-					jsonp('http://labs.bible.org/api/?passage=' + encodeURIComponent(reference.toString()) + '&type=json', callback);
+					jsonp('http://labs.bible.org/api/?passage=' + encodeURIComponent(reference) + '&type=json', callback);
 					break;
 				case 'KJV':
 				case 'LEB':
-					jsonp('http://api.biblia.com/v1/bible/content/' + v + '.html.json?style=oneVersePerLine&key=436e02d01081d28a78a45d65f66f4416&passage=' + encodeURIComponent(reference.toString()), callback);
+					jsonp('http://api.biblia.com/v1/bible/content/' + v + '.html.json?style=oneVersePerLine&key=436e02d01081d28a78a45d65f66f4416&passage=' + encodeURIComponent(reference), callback);
 					break;
 				case 'ESV':
-					jsonp('http://www.esvapi.org/crossref/ref.php?reference=' + encodeURIComponent(reference.toString()), callback);
+					jsonp('http://www.esvapi.org/crossref/ref.php?reference=' + encodeURIComponent(reference), callback);
 					break;					
 			} 
 		},		
@@ -724,14 +727,12 @@ bible.utility = {};
 			var 
 				v = getPopupVersion(),
 				p = bibly.popup,
-				max = bibly.maxVerses,
-				text = '',
-				i,il;
+				text = '';
 				
 			switch (v) {
 				default:
 				case 'NET':
-					for (i=0,il=d.length; i<il && i<max; i++) {
+					for (var i=0,il=d.length; i<il && i<4; i++) {
 						text += '<span class="bibly_verse_number">' + d[i].verse + '</span>' + d[i].text + ' ';
 					}
 					break;
@@ -748,7 +749,7 @@ bible.utility = {};
 		},
 		checkPosTimeout,
 		handleLinkMouseOver = function(e) {
-			if (!e) e = window.event;
+			if (!e) var e = window.event;
 			
 			clearPositionTimer();
 						
@@ -757,12 +758,12 @@ bible.utility = {};
 				pos = getPosition(target),
 				x = y = 0,
 				v = getPopupVersion();
-				referenceText = target.getAttribute('rel'),
+				ref = target.getAttribute('rel'),
 				viewport = getWindowSize(),
 				scrollPos = getScroll();
 			
 			p.outer.style.display = 'block';
-			p.header.innerHTML = referenceText + ' (' + v + ')';
+			p.header.innerHTML = ref + ' (' + v + ')';
 			p.content.innerHTML = 'Loading...<br/><br/><br/>';
 			p.footer.innerHTML = getFooter(v);
 			
@@ -798,7 +799,7 @@ bible.utility = {};
 			positionPopup();
 			
 			
-			getBibleText(referenceText, function(d) {
+			getBibleText(ref, function(d) {
 				// handle the various JSON outputs
 				handleBibleText(d);
 				
@@ -903,7 +904,7 @@ bible.utility = {};
 				
 			p.outer.className = 'bibly_popup_outer';
 			// build all the parts	
-			for (i=0,il=parts.length; i<il; i++) {
+			for (var i=0,il=parts.length; i<il; i++) {
 				name = parts[i];
 				div = document.createElement('div');
 				div.className = 'bibly_popup_' + name;
@@ -986,7 +987,7 @@ bible.utility = {};
 
 	// super cheater version of DOMoade
 	// do whatever happens first
-	addEvent(document,'DOMContentLoaded',startBibly);
+    addEvent(document,'DOMContentLoaded',startBibly);
 	addEvent(window,'load',startBibly);
 	
 	// export

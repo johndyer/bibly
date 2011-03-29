@@ -9,7 +9,7 @@ bibly_files.append('bible.reference.js')
 bibly_files.append('bibly.js')
 
 bibly_filename = 'bibly'
-bibly_version = '0.6.2'
+bibly_version = '0.6.3'
 bibly_version_path = 'build/' + bibly_version + '/'
 bibly_active_path = 'build/'
 
@@ -37,6 +37,7 @@ shutil.copy2(bibly_version_path + biblyjs, bibly_active_path + biblyjs)
 
 # create minified and copy it
 os.system('java -jar compiler.jar --js ' + bibly_version_path + biblyjs + ' --js_output_file ' + bibly_version_path + biblyjs_min)
+os.system('java -jar yuicompressor-2.4.2.jar ' + bibly_version_path + biblyjs + ' -o ' + bibly_version_path +  biblyjs_min + '.yui --charset utf-8 -v')
 shutil.copy2(bibly_version_path + biblyjs_min , bibly_active_path + biblyjs_min)
 
 # CSS files
