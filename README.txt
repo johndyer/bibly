@@ -1,3 +1,7 @@
+0.6.3
+- added '.' as a chapter:verse separator
+- limited JSONP calls to 4 verses
+
 0.6.2
 - added ESV as default
 
