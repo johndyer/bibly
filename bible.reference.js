@@ -1,4 +1,4 @@
-bible.parseReference = function (textReference) {
+﻿bible.parseReference = function (textReference) {
 
 	var 
 		bookIndex = -1,
@@ -6,7 +6,7 @@ bible.parseReference = function (textReference) {
 		verse1 = -1,
 		chapter2 = -1,
 		verse2 = -1,
-		input = new String(textReference),
+		input = new String(textReference).replace('&ndash;','-').replace('–','-'),
 		i, j,
 		afterRange = false,
 		afterSeparator = false,
@@ -45,7 +45,7 @@ bible.parseReference = function (textReference) {
 			if (!startedNumber)
 				continue;
 
-			if (c == '-' || c == '�') {
+			if (c == '-' || c == '–') {
 				afterRange = true;
 				afterSeparator = false;
 			} else if (c == ':' || c == ',' || c == '.') {
