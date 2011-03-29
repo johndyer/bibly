@@ -30,9 +30,7 @@
 				val, 
 				referenceNode, 
 				afterReferenceNode,
-				newLink,
-				refText,
-				shortenedRef;
+				newLink;
 			
 			if (match) {
 				val = match[0];
@@ -56,7 +54,6 @@
 			// split up match by ; and , characters and make a unique link for each
 			var 
 				newLink,
-				shortenedRef,
 				commaIndex = referenceNode.nodeValue.indexOf(','),
 				semiColonIndex = referenceNode.nodeValue.indexOf(';'),
 				separatorIndex = (commaIndex > 0 && semiColonIndex > 0) ? Math.min(commaIndex, semiColonIndex) : Math.max(commaIndex, semiColonIndex),
@@ -179,15 +176,8 @@
 			}
 		},
 		callbackIndex=100000,
-		jsonpCache = {},
-		enableJsonpCache = true,
-		jsonp = function(url, callback, jsonpName){  
+		jsonp = function(url, callback){  
 		
-			// check cache
-			//if (enableJsonpCache && typeof jsonpCache[url] != 'undefined') {
-			//	window[jsonpCache[url]]();
-			//} else {
-			
 				var jsonpName = 'callback' + (callbackIndex++);
 					script = document.createElement("script"); 
 			
@@ -202,7 +192,7 @@
 				script.setAttribute("src",url);
 				script.setAttribute("type","text/javascript");                
 				document.body.appendChild(script);
-			//}
+			
 		},
 		getFooter= function(version) {
 			switch (version) {
@@ -247,7 +237,7 @@
 			switch (v) {
 				default:
 				case 'NET':
-					jsonp('http://labs.bible.org/api/?passage=' + encodeURIComponent(ref.toString()) + '&type=json', callback);
+					jsonp('http://labs.bible.org/api/?passage=' + encodeURIComponent(reference.toString()) + '&type=json', callback);
 					break;
 				case 'KJV':
 				case 'LEB':
@@ -263,12 +253,13 @@
 				v = getPopupVersion(),
 				p = bibly.popup,
 				max = bibly.maxVerses,
-				text = '';
+				text = '',
+				i,il;
 				
 			switch (v) {
 				default:
 				case 'NET':
-					for (var i=0,il=d.length; i<il && i<max; i++) {
+					for (i=0,il=d.length; i<il && i<max; i++) {
 						text += '<span class="bibly_verse_number">' + d[i].verse + '</span>' + d[i].text + ' ';
 					}
 					break;
@@ -285,7 +276,7 @@
 		},
 		checkPosTimeout,
 		handleLinkMouseOver = function(e) {
-			if (!e) var e = window.event;
+			if (!e) e = window.event;
 			
 			clearPositionTimer();
 						
@@ -294,12 +285,12 @@
 				pos = getPosition(target),
 				x = y = 0,
 				v = getPopupVersion();
-				ref = target.getAttribute('rel'),
+				referenceText = target.getAttribute('rel'),
 				viewport = getWindowSize(),
 				scrollPos = getScroll();
 			
 			p.outer.style.display = 'block';
-			p.header.innerHTML = ref + ' (' + v + ')';
+			p.header.innerHTML = referenceText + ' (' + v + ')';
 			p.content.innerHTML = 'Loading...<br/><br/><br/>';
 			p.footer.innerHTML = getFooter(v);
 			
@@ -335,7 +326,7 @@
 			positionPopup();
 			
 			
-			getBibleText(ref, function(d) {
+			getBibleText(referenceText, function(d) {
 				// handle the various JSON outputs
 				handleBibleText(d);
 				
@@ -440,7 +431,7 @@
 				
 			p.outer.className = 'bibly_popup_outer';
 			// build all the parts	
-			for (var i=0,il=parts.length; i<il; i++) {
+			for (i=0,il=parts.length; i<il; i++) {
 				name = parts[i];
 				div = document.createElement('div');
 				div.className = 'bibly_popup_' + name;
@@ -523,7 +514,7 @@
 
 	// super cheater version of DOMoade
 	// do whatever happens first
-    addEvent(document,'DOMContentLoaded',startBibly);
+	addEvent(document,'DOMContentLoaded',startBibly);
 	addEvent(window,'load',startBibly);
 	
 	// export
