@@ -13,7 +13,8 @@
 		startedNumber = false,
 		currentNumber = '',
 		name,
-		possibleMatch;
+		possibleMatch,
+		c;
 
 
 	// go through all books and test all names
@@ -39,7 +40,7 @@
 
 
 	for (i = 0; i < input.length; i++) {
-		var c = input.charAt(i);
+		c = input.charAt(i);
 
 		if (c == ' ' || isNaN(c)) {
 			if (!startedNumber)
@@ -143,12 +144,6 @@ bible.Reference = function () {
 		if (arguments.length >= 3) _verse1 = arguments[2];
 		if (arguments.length >= 4) _chapter2 = arguments[3];
 		if (arguments.length >= 5) _verse2 = arguments[4];
-	}
-
-	function padLeft(input, length, s) {
-		while (input.length < length)
-			input = s + input;
-		return input;
 	}
 
 	return {
