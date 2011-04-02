@@ -1,3 +1,12 @@
+0.7.1 
+- fix Biblia API key
+
+0.7
+- size optimizations (mostly of bible.js)
+
+0.6.4 
+- YIU bug fixed
+
 0.6.3
 - added '.' as a chapter:verse separator
 - limited JSONP calls to 4 verses

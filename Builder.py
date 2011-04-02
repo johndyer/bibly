@@ -9,7 +9,7 @@ bibly_files.append('bible.reference.js')
 bibly_files.append('bibly.js')
 
 bibly_filename = 'bibly'
-bibly_version = '0.6.3'
+bibly_version = '0.7.1'
 bibly_version_path = 'build/' + bibly_version + '/'
 bibly_active_path = 'build/'
 
