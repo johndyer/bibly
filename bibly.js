@@ -5,17 +5,22 @@
 (function() {
 	// book names list	
 	var bibly = {
-			version: '0.6.3',
+			version: '0.7',
 			maxNodes: 500,
 			className: 'bibly_reference',
 			enablePopups: true,
 			popupVersion: 'ESV',
 			linkVersion: '',
+			bibliaApiKey: '436e02d01081d28a78a45d65f66f4416', 
 			autoStart: true,
 			startNodeId: '',
 			maxVerses: 4
 		},	
-		defaultPopupVersion = 'NET',
+		win = window,
+		doc = document,
+		body = null,
+		
+		defaultPopupVersion = 'ESV',
 		allowedPopupVersions = ['NET','ESV','KJV','LEB','DARBY'],
 		bok = bible.genNames(),
 		ver =  '(\\d+)([\.:](\\d+))?(\\s?[-–&]\\s?(\\d+))?',  // 1 OR 1:1 OR 1:1-2
@@ -176,22 +181,23 @@
 			}
 		},
 		callbackIndex=100000,
+		jsonpCache = {},
 		jsonp = function(url, callback){  
 		
-				var jsonpName = 'callback' + (callbackIndex++);
-					script = document.createElement("script"); 
-			
-				window[jsonpName] = function(d) {
-					callback(d);
-				}
-				jsonpCache[url] = jsonpName;
-			
-				url += (url.indexOf("?") > -1 ? '&' : '?') + 'callback=' + jsonpName;			  
-				//url += '&' + new Date().getTime().toString(); // prevent caching        
-							
-				script.setAttribute("src",url);
-				script.setAttribute("type","text/javascript");                
-				document.body.appendChild(script);
+			var jsonpName = 'callback' + (callbackIndex++),
+				script = doc.createElement("script"); 
+		
+			win[jsonpName] = function(d) {
+				callback(d);
+			}
+			jsonpCache[url] = jsonpName;
+		
+			url += (url.indexOf("?") > -1 ? '&' : '?') + 'callback=' + jsonpName;			  
+			//url += '&' + new Date().getTime().toString(); // prevent caching        
+						
+			script.setAttribute("src",url);
+			script.setAttribute("type","text/javascript");                
+			body.appendChild(script);
 			
 		},
 		getFooter= function(version) {
@@ -241,7 +247,7 @@
 					break;
 				case 'KJV':
 				case 'LEB':
-					jsonp('http://api.biblia.com/v1/bible/content/' + v + '.html.json?style=oneVersePerLine&key=436e02d01081d28a78a45d65f66f4416&passage=' + encodeURIComponent(reference.toString()), callback);
+					jsonp('http://api.biblia.com/v1/bible/content/' + v + '.html.json?style=oneVersePerLine&key=' + bibly.bibliaApiKey + '&passage=' + encodeURIComponent(reference.toString()), callback);
 					break;
 				case 'ESV':
 					jsonp('http://www.esvapi.org/crossref/ref.php?reference=' + encodeURIComponent(reference.toString()), callback);
@@ -254,6 +260,7 @@
 				p = bibly.popup,
 				max = bibly.maxVerses,
 				text = '',
+				className = v + '-version',
 				i,il;
 				
 			switch (v) {
@@ -265,6 +272,7 @@
 					break;
 				case 'KJV':
 				case 'LEB':
+					className += ' biblia';
 					text = d.text;
 					break;
 				case 'ESV':
@@ -272,11 +280,11 @@
 					break;					
 			}
 			
-			p.content.innerHTML = '<div class="' + v + '-version">' + text + '</div>';
+			p.content.innerHTML = '<div class="' + className + '">' + text + '</div>';
 		},
 		checkPosTimeout,
 		handleLinkMouseOver = function(e) {
-			if (!e) e = window.event;
+			if (!e) e = win.event;
 			
 			clearPositionTimer();
 						
@@ -376,18 +384,18 @@
 		getWindowSize= function() {
 			var width = 0, 
 				height = 0;
-			if( typeof( window.innerWidth ) == 'number' ) {
+			if( typeof( win.innerWidth ) == 'number' ) {
 				// Non-IE
-				width = window.innerWidth;
-				height = window.innerHeight;
-			} else if( document.documentElement && ( document.documentElement.clientWidth || document.documentElement.clientHeight ) ) {
+				width = win.innerWidth;
+				height = win.innerHeight;
+			} else if( doc.documentElement && ( doc.documentElement.clientWidth || doc.documentElement.clientHeight ) ) {
 				//IE 6+ in 'standards compliant mode'
-				width = document.documentElement.clientWidth;
-				height = document.documentElement.clientHeight;
-			} else if( document.body && ( document.body.clientWidth || document.body.clientHeight ) ) {
+				width = doc.documentElement.clientWidth;
+				height = doc.documentElement.clientHeight;
+			} else if( body && ( body.clientWidth || body.clientHeight ) ) {
 				//IE 4 compatible
-				width = document.body.clientWidth;
-				height = document.body.clientHeight;
+				width = body.clientWidth;
+				height = body.clientHeight;
 			}
 			
 			return {width:width, height: height};
@@ -395,69 +403,24 @@
 		getScroll = function () {
 			var scrOfX = 0, 
 				scrOfY = 0;
-			if( document.body && ( document.body.scrollLeft || document.body.scrollTop ) ) {
+			if( body && ( body.scrollLeft || body.scrollTop ) ) {
 				//DOM compliant
-				scrOfY = document.body.scrollTop;
-				scrOfX = document.body.scrollLeft;
-			} else if( document.documentElement && ( document.documentElement.scrollLeft || document.documentElement.scrollTop ) ) {
+				scrOfY = body.scrollTop;
+				scrOfX = body.scrollLeft;
+			} else if( doc.documentElement && ( doc.documentElement.scrollLeft || doc.documentElement.scrollTop ) ) {
 				//IE6 standards compliant mode
-				scrOfY = document.documentElement.scrollTop;
-				scrOfX = document.documentElement.scrollLeft;
-			} else if( typeof( window.pageYOffset ) == 'number' ) {
+				scrOfY = doc.documentElement.scrollTop;
+				scrOfX = doc.documentElement.scrollLeft;
+			} else if( typeof( win.pageYOffset ) == 'number' ) {
 				//Netscape compliant
-				scrOfY = window.pageYOffset;
-				scrOfX = window.pageXOffset;
+				scrOfY = win.pageYOffset;
+				scrOfX = win.pageXOffset;
 			}
 			
 			return {x: scrOfX, y:scrOfY };
-		}
-		isStarted = false,
-		startBibly = function() {
-			
-			if (isStarted)
-				return;				
-			isStarted = true;
-			
-			// create popup
-			var p = bibly.popup = {
-					outer: document.createElement('div')
-				}, 
-				parts = ['header','content','footer','arrowtop_border','arrowtop','arrowbot_border','arrowbot'],
-				i,
-				il,
-				div,
-				name,
-				node = null;
-				
-			p.outer.className = 'bibly_popup_outer';
-			// build all the parts	
-			for (i=0,il=parts.length; i<il; i++) {
-				name = parts[i];
-				div = document.createElement('div');
-				div.className = 'bibly_popup_' + name;
-				p.outer.appendChild(div);
-				p[name] = div;
-			}
-			
-			document.body.appendChild(p.outer);	
-			
-			addEvent(p.outer,'mouseover',handlePopupMouseOver);
-			addEvent(p.outer,'mouseout',handlePopupMouseOut);
-
-			if (bibly.autoStart) {
-				if (bibly.startNodeId != '') {
-					node = document.getElementById(bibly.startNodeId);
-				}
-				
-				if (node == null) {
-					node = document.body;
-				}
-				
-				scanForReferences(node);
-			}
 		},
 		scanForReferences = function(node) {				
-			// build document
+			// build doc
 			traverseDOM(node.childNodes[0], 1, textHandler);		
 		},
 		traverseDOM = function(node, depth, textHandler) {
@@ -497,7 +460,7 @@
 					}
 				}
 			}
-		}, 
+		},
 		addEvent = function(obj,name,fxn) {
 			if (obj.attachEvent) {
 				obj.attachEvent('on' + name, fxn);
@@ -510,14 +473,62 @@
 					__();
 				};
 			}			
-		}
+		},		
+		isStarted = false,
+		startBibly = function() {
+			
+			if (isStarted)
+				return;				
+			isStarted = true;
+			
+			doc = document;
+			body = doc.body;
+			
+			// create popup
+			var p = bibly.popup = {
+					outer: doc.createElement('div')
+				}, 
+				parts = ['header','content','footer','arrowtop_border','arrowtop','arrowbot_border','arrowbot'],
+				i,
+				il,
+				div,
+				name,
+				node = null;
+				
+			p.outer.className = 'bibly_popup_outer';
+			// build all the parts	
+			for (i=0,il=parts.length; i<il; i++) {
+				name = parts[i];
+				div = doc.createElement('div');
+				div.className = 'bibly_popup_' + name;
+				p.outer.appendChild(div);
+				p[name] = div;
+			}
+			
+			body.appendChild(p.outer);	
+			
+			addEvent(p.outer,'mouseover',handlePopupMouseOver);
+			addEvent(p.outer,'mouseout',handlePopupMouseOut);
+
+			if (bibly.autoStart) {
+				if (bibly.startNodeId != '') {
+					node = doc.getElementById(bibly.startNodeId);
+				}
+				
+				if (node == null) {
+					node = body;
+				}
+				
+				scanForReferences(node);
+			}
+		};
 
 	// super cheater version of DOMoade
 	// do whatever happens first
-	addEvent(document,'DOMContentLoaded',startBibly);
-	addEvent(window,'load',startBibly);
+	addEvent(doc,'DOMContentLoaded',startBibly);
+	addEvent(win,'load',startBibly);
 	
 	// export
 	bibly.scanForReferences = scanForReferences;
-	window.bibly = bibly;	
+	win.bibly = bibly;	
 })();

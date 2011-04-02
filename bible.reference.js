@@ -96,26 +96,23 @@
 	}
 
 	// validate max chapter
-	if (chapter1 == -1) {
-		chapter1 = 1;
-	} else if (chapter1 > bible.Books[bookIndex].verses.length) {
-		chapter1 = bible.Books[bookIndex].verses.length;
-		if (verse1 > 0)
-			verse1 = 1;
-	}
+	if ( typeof bible.Books[bookIndex].verses  != 'undefined') {
+		if (chapter1 == -1) {
+			chapter1 = 1;
+		} else if (chapter1 > bible.Books[bookIndex].verses.length) {
+			chapter1 = bible.Books[bookIndex].verses.length;
+			if (verse1 > 0)
+				verse1 = 1;
+		}
 
-	// validate max verse
-	/*
-	if (verse1 == -1) {
-	verse1 = 1;
-	} else 
-	*/
-	if (verse1 > bible.Books[bookIndex].verses[chapter1 - 1]) {
-		verse1 = bible.Books[bookIndex].verses[chapter1 - 1];
-	}
-	if (verse2 <= verse1) {
-		chapter2 = -1;
-		verse2 = -1;
+		// validate max verse
+		if (verse1 > bible.Books[bookIndex].verses[chapter1 - 1]) {
+			verse1 = bible.Books[bookIndex].verses[chapter1 - 1];
+		}
+		if (verse2 <= verse1) {
+			chapter2 = -1;
+			verse2 = -1;
+		}
 	}
 
 	// finalize
@@ -130,20 +127,21 @@ bible.Reference = function () {
 		_chapter1 = -1,
 		_verse1 = -1,
 		_chapter2 = -1,
-		_verse2 = -1;
+		_verse2 = -1,
+		args = arguments;
 
-	if (arguments.length == 0) {
+	if (args.length == 0) {
 		// error		
-	} else if (arguments.length == 1 && typeof arguments[0] == 'string') { // a string that needs to be parsed
-		return bible.parseReference(arguments[0]);
-	} else if (arguments.length == 1) { // unknonw
+	} else if (args.length == 1 && typeof args[0] == 'string') { // a string that needs to be parsed
+		return bible.parseReference(args[0]);
+	} else if (args.length == 1) { // unknonw
 		return null;
 	} else {
-		_bookIndex = arguments[0];
-		_chapter1 = arguments[1];
-		if (arguments.length >= 3) _verse1 = arguments[2];
-		if (arguments.length >= 4) _chapter2 = arguments[3];
-		if (arguments.length >= 5) _verse2 = arguments[4];
+		_bookIndex = args[0];
+		_chapter1 = args[1];
+		if (args.length >= 3) _verse1 = args[2];
+		if (args.length >= 4) _chapter2 = args[3];
+		if (args.length >= 5) _verse2 = args[4];
 	}
 
 	return {
@@ -163,17 +161,22 @@ bible.Reference = function () {
 			cvSeparator = cvSeparator || ':';
 			vvSeparator = vvSeparator || '-';
 			ccSeparator = ccSeparator || '-';
+			
+			var chapter1 = this.chapter1, 
+				chapter2 = this.chapter2, 
+				verse1 = this.verse1, 
+				verse2 = this.verse2;
 
-			if (this.chapter1 > 0 && this.verse1 <= 0 && this.chapter2 <= 0 && this.verse2 <= 0) // John 1
-				return this.chapter1;
-			else if (this.chapter1 > 0 && this.verse1 > 0 && this.chapter2 <= 0 && this.verse2 <= 0) // John 1:1
-				return this.chapter1 + cvSeparator + this.verse1;
-			else if (this.chapter1 > 0 && this.verse1 > 0 && this.chapter2 <= 0 && this.verse2 > 0) // John 1:1-5
-				return this.chapter1 + cvSeparator + this.verse1 + vvSeparator + this.verse2;
-			else if (this.chapter1 > 0 && this.verse1 <= 0 && this.chapter2 > 0 && this.verse2 <= 0) // John 1-2
-				return this.chapter1 + ccSeparator + this.chapter2;
-			else if (this.chapter1 > 0 && this.verse1 > 0 && this.chapter2 > 0 && this.verse2 > 0) // John 1:1-2:2
-				return this.chapter1 + cvSeparator + this.verse1 + ccSeparator + ((this.chapter1 != this.chapter2) ? this.chapter2 + cvSeparator : '') + this.verse2;
+			if (chapter1 > 0 && verse1 <= 0 && chapter2 <= 0 && verse2 <= 0) // John 1
+				return chapter1;
+			else if (chapter1 > 0 && verse1 > 0 && chapter2 <= 0 && verse2 <= 0) // John 1:1
+				return chapter1 + cvSeparator + verse1;
+			else if (chapter1 > 0 && verse1 > 0 && chapter2 <= 0 && verse2 > 0) // John 1:1-5
+				return chapter1 + cvSeparator + verse1 + vvSeparator + verse2;
+			else if (chapter1 > 0 && verse1 <= 0 && chapter2 > 0 && verse2 <= 0) // John 1-2
+				return chapter1 + ccSeparator + chapter2;
+			else if (chapter1 > 0 && verse1 > 0 && chapter2 > 0 && verse2 > 0) // John 1:1-2:2
+				return chapter1 + cvSeparator + verse1 + ccSeparator + ((chapter1 != chapter2) ? chapter2 + cvSeparator : '') + verse2;
 			else
 				return 'unknown';
 		},
@@ -190,5 +193,3 @@ bible.Reference = function () {
 		}
 	}
 };
-bible.utility = {};
-
