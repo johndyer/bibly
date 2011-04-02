@@ -17,6 +17,7 @@
 	font-family: Helvetica, Arial, sans-serif;
 	font-size: 12px;
 	line-height: 1em;
+	color: #11111;
 	
 	/* gradients */
 	background: #fff;
@@ -43,12 +44,7 @@
 	   -moz-text-shadow: 1px 1px 1px rgba(50,50,50,0.5);
 	        text-shadow: 1px 1px 1px rgba(50,50,50,0.5);	
 }
-.bibly_popup_content {
-	padding: 10px;
-	min-height: 40px;
-	
-	line-height: 1.4em;
-}
+
 .bibly_popup_footer {
 	padding: 5px 10px;
 	font-size: 8px;
@@ -109,9 +105,15 @@
 }
 
 
-
+.bibly_popup_content {
+	padding: 10px;
+	min-height: 40px;
+	color: #111;
+	line-height: 1.4em;
+}
 .bibly_popup_content p {
 	display: inline;
+	color: #111;
 }
 .bibly_popup_content .NET-version p:first-child {
 	display: none;
