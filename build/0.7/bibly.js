@@ -520,7 +520,7 @@ bible.Reference = function () {
 			enablePopups: true,
 			popupVersion: 'ESV',
 			linkVersion: '',
-			bibliaApiKey: '436e02d01081d28a78a45d65f66f4416', 
+			bibiaApiKey: '436e02d01081d28a78a45d65f66f4416', 
 			autoStart: true,
 			startNodeId: '',
 			maxVerses: 4
