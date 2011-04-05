@@ -5,8 +5,8 @@
 (function() {
 	// book names list	
 	var bibly = {
-			version: '0.7',
-			maxNodes: 500,
+			version: '0.8',
+			maxNodes: 200,
 			className: 'bibly_reference',
 			enablePopups: true,
 			popupVersion: 'ESV',
@@ -26,8 +26,8 @@
 		ver =  '(\\d+)([\.:](\\d+))?(\\s?[-–&]\\s?(\\d+))?',  // 1 OR 1:1 OR 1:1-2
 		ver2 =  '(\\d+)[\.:](\\d+)(\\s?[-–&]\\s?(\\d+))?',  // NOT 1 OR 1:1 OR 1:1-2 (this is needed so verses after semi-colons require a :. Problem John 3:16; 2 Cor 3:3 <-- the 2 will be a verse)
 		regexPattern = '\\b('+bok+')\.?\\s+('+ver+'((\\s?,\\s?'+ver+')|(\\s?;\\s?'+ver2+'))*)\\b',
-		referenceRegex = new RegExp(regexPattern, 'm'),
-		verseRegex = new RegExp(ver, 'm'),
+		referenceRegex = new RegExp(regexPattern, 'mi'),
+		verseRegex = new RegExp(ver, 'mi'),
 		skipRegex = /^(a|script|style|textarea)$/i,
 		lastReference = null,
 		textHandler = function(node) {
@@ -36,6 +36,9 @@
 				referenceNode, 
 				afterReferenceNode,
 				newLink;
+			
+			// reset this
+			lastReference = null;
 			
 			if (match) {
 				val = match[0];
@@ -78,28 +81,35 @@
 				remainder = separator.splitText(startRemainder);
 			}	
 			
-			// replace the referenceNode TEXT with an anchor node
-			newLink = node.ownerDocument.createElement('A');				
-			node.parentNode.replaceChild(newLink, referenceNode);			
+			// test if the text matches a real reference
 			refText = referenceNode.nodeValue;	
 			reference = parseRefText(refText);
-			newLink.setAttribute('href', reference.toShortUrl() + (bibly.linkVersion != '' ? '.' + bibly.linkVersion : ''));
-			newLink.setAttribute('title', 'Read ' + reference.toString());
-			newLink.setAttribute('rel', reference.toString());
-			newLink.setAttribute('class', bibly.className);
-			newLink.appendChild(referenceNode);
-			
-			if (bibly.enablePopups) {
-				addEvent(newLink,'mouseover', handleLinkMouseOver);
-				addEvent(newLink,'mouseout', handleLinkMouseOut);
+			if (typeof reference != 'undefined' && reference.isValid()) {
+				
+				// replace the referenceNode TEXT with an anchor node to bib.ly
+				newLink = node.ownerDocument.createElement('A');				
+				node.parentNode.replaceChild(newLink, referenceNode);	
+				newLink.setAttribute('href', reference.toShortUrl() + (bibly.linkVersion != '' ? '.' + bibly.linkVersion : ''));
+				newLink.setAttribute('title', 'Read ' + reference.toString());
+				newLink.setAttribute('rel', reference.toString());
+				newLink.setAttribute('class', bibly.className);
+				newLink.appendChild(referenceNode);
+				
+				if (bibly.enablePopups) {
+					addEvent(newLink,'mouseover', handleLinkMouseOver);
+					addEvent(newLink,'mouseout', handleLinkMouseOut);
+				}
+				
+				// if there was a separator, now parse the stuff after it
+				if (remainder) {				
+					newLink = createLinksFromNode(node, remainder);				
+				}	
+				
+				return newLink;
+			} else {
+				// for false matches, return it unchanged
+				return referenceNode;
 			}
-			
-			// if there was a separator, now parse the stuff after it
-			if (remainder) {				
-				newLink = createLinksFromNode(node, remainder);				
-			}	
-			
-			return newLink;
 		},
 		parseRefText = function(refText) {
 			
@@ -110,9 +120,11 @@
 				p1, p3, p5;
 			
 			if (reference != null && typeof reference.isValid != 'undefined' && reference.isValid()) {
+				
 				lastReference = reference;
 				return reference;
-			} else {
+				
+			} else if (lastReference  != null) {
 				
 				// single verse match (3)
 				match = verseRegex.exec(refText);				
@@ -129,44 +141,39 @@
 						p5 = 0;
 					}
 					
-					if (
-						// single verse (1)
-						p3 == 0 && p5 == 0) {
+					// single verse (1)
+					if (p3 == 0 && p5 == 0) {
 											
 						lastReference.verse1 = parseInt(match[1],10);
 						lastReference.chapter2 = -1;
 						lastReference.verse2 = -1;
 					
-					} else if (
-						// 1:2
-						p3 != 0 && p5 == 0) {
+					// 1:2
+					} else if ( p3 != 0 && p5 == 0) {
 						
 						lastReference.chapter1 = parseInt(match[1],10);
 						lastReference.verse1 = parseInt(match[3],10);
 						lastReference.chapter2 = -1;
 						lastReference.verse2 = -1;		
 					
-					} else if (
-						// 1:2-3
-						p3 != 0 && p5 != 0) {
+					// 1:2-3
+					} else if (p3 != 0 && p5 != 0) {
 						
 						lastReference.chapter1 = parseInt(match[1],10);
 						lastReference.verse1 = parseInt(match[3],10);
 						lastReference.chapter2 = -1;
 						lastReference.verse2 = parseInt(match[5],10);;		
-					} else if (
-						// 1-2
-						p3 == 0 && p5 != 0) {
+					
+					// 1-2
+					} else if (p3 == 0 && p5 != 0) {
 						
 						lastReference.verse1 = parseInt(match[1],10);
 						lastReference.chapter2 = -1;
 						lastReference.verse2 = parseInt(match[5],10);;		
-					}					
-									
+					}
 					
 					return lastReference;
 				}
-											
 			
 				// failure
 				return {
