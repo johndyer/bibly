@@ -13,108 +13,140 @@
 		startedNumber = false,
 		currentNumber = '',
 		name,
-		possibleMatch,
+		possibleMatch = null,
 		c;
-
-
-	// go through all books and test all names
-	for (i = bible.Books.length - 1; i >= 0; i--) {
-		// test each name starting with the full name, then short code, then abbreviation, then alternates
-		for (j = 0; j < bible.Books[i].names.length; j++) {
-			name = new String(bible.Books[i].names[j]).toLowerCase();
-			possibleMatch = input.substring(0, Math.floor(name.length, input.length)).toLowerCase();
-
-			if (possibleMatch == name) {
-				bookIndex = i;
-				input = input.substring(name.length);
-				break;
-			}
-
-		}
-		if (bookIndex > -1)
+		
+	// take the entire reference (John 1:1 or 1 Cor) and move backwards until we find a letter or space
+	// 'John 1:1' => 'John '
+	// '1 Cor' => '1 Cor'
+	// 'July15' => 'July'
+	for (i=input.length; i>=0; i--) {
+		if (/[A-Za-z\s]/.test(input.substring(i-1,i))) {
+			possibleMatch = input.substring(0,i);
 			break;
-	}
-
-	if (bookIndex < 0)
-		return null;
-
-
-	for (i = 0; i < input.length; i++) {
-		c = input.charAt(i);
-
-		if (c == ' ' || isNaN(c)) {
-			if (!startedNumber)
-				continue;
-
-			if (c == '-' || c == '–') {
-				afterRange = true;
-				afterSeparator = false;
-			} else if (c == ':' || c == ',' || c == '.') {
-				afterSeparator = true;
-			} else {
-				// ignore
-			}
-
-			// reset
-			currentNumber = '';
-			startedNumber = false;
-
-		} else {
-			startedNumber = true;
-			currentNumber += c;
-
-			if (afterSeparator) {
-				if (afterRange) {
-					verse2 = parseInt(currentNumber);
-				} else { // 1:1
-					verse1 = parseInt(currentNumber);
-				}
-			} else {
-				if (afterRange) {
-					chapter2 = parseInt(currentNumber);
-				} else { // 1
-					chapter1 = parseInt(currentNumber);
-				}
-			}
 		}
 	}
+	
+	if (possibleMatch != null) {
+		
+		// tear off any remaining spaces
+		// 'John ' => 'John'
+		possibleMatch = possibleMatch.replace(/\s+$/,'').replace(/\.+$/,'').toLowerCase();
 
-	// reassign 1:1-2	
-	if (chapter1 > 0 && verse1 > 0 && chapter2 > 0 && verse2 <= 0) {
-		verse2 = chapter2;
-		chapter2 = chapter1;
-	}
-	// fix 1-2:5
-	if (chapter1 > 0 && verse1 <= 0 && chapter2 > 0 && verse2 > 0) {
-		verse1 = 1;
-	}
+		// go through all books and test all names
+		for (i = bible.Books.length - 1; i >= 0; i--) {
+			// test each name starting with the full name, then short code, then abbreviation, then alternates
+			for (j = 0; j < bible.Books[i].names.length; j++) {
+				name = new String(bible.Books[i].names[j]).toLowerCase();
+				//possibleMatch = input.substring(0, Math.floor(name.length, input.length)).toLowerCase();
+				//possibleMatch = input.toLowerCase();
+				//possibleMatch = input.substring(0, Math.floor(name.length, input.length)).toLowerCase();
+				
+				console.log((possibleMatch == name), (possibleMatch === name), name, possibleMatch, input);
+				
+				if (possibleMatch == name) {
+				//if (input.toLowerCase() == name.toLowerCase()) {
+					bookIndex = i;
+					input = input.substring(name.length);
+					break;
+				}
 
-	// just book
-	if (bookIndex > -1 && chapter1 <= 0 && verse1 <= 0 && chapter2 <= 0 && verse2 <= 0) {
-		chapter1 = 1;
-		//verse1 = 1;
-	}
+			}
+			if (bookIndex > -1)
+				break;
+		}
 
-	// validate max chapter
-	if ( typeof bible.Books[bookIndex].verses  != 'undefined') {
-		if (chapter1 == -1) {
-			chapter1 = 1;
-		} else if (chapter1 > bible.Books[bookIndex].verses.length) {
-			chapter1 = bible.Books[bookIndex].verses.length;
-			if (verse1 > 0)
+		if (bookIndex > -1) {
+
+			for (i = 0; i < input.length; i++) {
+				c = input.charAt(i);
+
+				if (c == ' ' || isNaN(c)) {
+					if (!startedNumber)
+						continue;
+
+					if (c == '-' || c == '–') {
+						afterRange = true;
+						afterSeparator = false;
+					} else if (c == ':' || c == ',' || c == '.') {
+						afterSeparator = true;
+					} else {
+						// ignore
+					}
+
+					// reset
+					currentNumber = '';
+					startedNumber = false;
+
+				} else {
+					startedNumber = true;
+					currentNumber += c;
+
+					if (afterSeparator) {
+						if (afterRange) {
+							verse2 = parseInt(currentNumber);
+						} else { // 1:1
+							verse1 = parseInt(currentNumber);
+						}
+					} else {
+						if (afterRange) {
+							chapter2 = parseInt(currentNumber);
+						} else { // 1
+							chapter1 = parseInt(currentNumber);
+						}
+					}
+				}
+			}
+			
+			// for books with only one chapter, treat the chapter as a vers
+			if (bible.Books[bookIndex].verses.length == 1) {
+				
+				// Jude 6 ==> Jude 1:6
+				if (chapter1 > 1 && verse1 == -1) {
+					verse1 = chapter1;
+					chapter1 = 1;
+				}
+			}	
+			
+
+			// reassign 1:1-2	
+			if (chapter1 > 0 && verse1 > 0 && chapter2 > 0 && verse2 <= 0) {
+				verse2 = chapter2;
+				chapter2 = chapter1;
+			}
+			// fix 1-2:5
+			if (chapter1 > 0 && verse1 <= 0 && chapter2 > 0 && verse2 > 0) {
 				verse1 = 1;
-		}
+			}
 
-		// validate max verse
-		if (verse1 > bible.Books[bookIndex].verses[chapter1 - 1]) {
-			verse1 = bible.Books[bookIndex].verses[chapter1 - 1];
-		}
-		if (verse2 <= verse1) {
-			chapter2 = -1;
-			verse2 = -1;
+			// just book
+			if (bookIndex > -1 && chapter1 <= 0 && verse1 <= 0 && chapter2 <= 0 && verse2 <= 0) {
+				chapter1 = 1;
+				//verse1 = 1;
+			}
+
+			// validate max chapter
+			if ( typeof bible.Books[bookIndex].verses  != 'undefined') {
+				if (chapter1 == -1) {
+					chapter1 = 1;
+				} else if (chapter1 > bible.Books[bookIndex].verses.length) {
+					chapter1 = bible.Books[bookIndex].verses.length;
+					if (verse1 > 0)
+						verse1 = 1;
+				}
+
+				// validate max verse
+				if (verse1 > bible.Books[bookIndex].verses[chapter1 - 1]) {
+					verse1 = bible.Books[bookIndex].verses[chapter1 - 1];
+				}
+				if (verse2 <= verse1) {
+					chapter2 = -1;
+					verse2 = -1;
+				}
+			}
 		}
 	}
-
+		
 	// finalize
 	return bible.Reference(bookIndex, chapter1, verse1, chapter2, verse2);
 
@@ -134,7 +166,7 @@ bible.Reference = function () {
 		// error		
 	} else if (args.length == 1 && typeof args[0] == 'string') { // a string that needs to be parsed
 		return bible.parseReference(args[0]);
-	} else if (args.length == 1) { // unknonw
+	} else if (args.length == 1) { // unknown
 		return null;
 	} else {
 		_bookIndex = args[0];
@@ -178,7 +210,7 @@ bible.Reference = function () {
 			else if (chapter1 > 0 && verse1 > 0 && chapter2 > 0 && verse2 > 0) // John 1:1-2:2
 				return chapter1 + cvSeparator + verse1 + ccSeparator + ((chapter1 != chapter2) ? chapter2 + cvSeparator : '') + verse2;
 			else
-				return 'unknown';
+				return '?';
 		},
 
 		toString: function () {
