@@ -61,7 +61,7 @@ bible.Books = [
 	,verses:[18,24,17,24,15,27,26,35,27,43,23,24,33,15,63,10,18,28,51,9,45,34,16,33]
 },
 {
-	names:split('Judges Jg Jud Jdg Ju Jdgs')
+	names:split('Judges Jg Jud Jdg Ju Jdgs Judg')
 	,verses:[36,23,31,24,31,40,25,35,57,18,40,15,25,20,20,31,13,31,30,48,25]
 },
 {
@@ -69,19 +69,19 @@ bible.Books = [
 	,verses:[22,23,18,22]
 },
 {
-	names:ordinals(1,'Samuel Sa Sam S')
+	names:ordinals(1,'Samuel Sa Sam')
 	,verses:[28,36,21,22,12,21,17,22,27,27,15,25,23,52,35,23,58,30,24,42,15,23,29,22,44,25,12,25,11,31,13]
 },
 {
-	names:ordinals(2,'Samuel Sa Sam S')
+	names:ordinals(2,'Samuel Sa Sam')
 	,verses:[27,32,39,12,25,23,29,18,13,19,27,31,39,33,37,23,29,33,43,26,22,51,39,25]
 },
 {
-	names:ordinals(1,'Kings K King Kin Kngs Kngs')
+	names:ordinals(1,'Kings Ki King Kin Kngs')
 	,verses:[53,46,28,34,18,38,51,66,28,29,43,33,34,31,34,34,24,46,21,43,29,53]
 },
 {
-	names:ordinals(2,'Kings K King Kin Kngs Kngs')
+	names:ordinals(2,'Kings Ki King Kin Kngs')
 	,verses:[18,25,27,44,27,33,20,29,37,36,21,21,25,29,38,20,41,37,37,21,26,20,37,20,30]
 },
 {
@@ -125,7 +125,7 @@ bible.Books = [
 	,verses:[17,17,11,16,16,13,13,14]
 },
 {
-	names:split('Isaiah Is Isa')
+	names:split('Isaiah Isa')
 	,verses:[31,22,26,6,30,13,25,22,21,34,16,6,22,32,9,14,14,7,25,6,17,25,18,23,12,21,13,29,24,33,9,20,24,17,10,22,38,22,8,31,29,25,28,28,25,13,15,22,26,11,23,15,12,17,13,12,21,14,21,22,11,12,19,12,25,24]
 },
 {
@@ -169,7 +169,7 @@ bible.Books = [
 	,verses:[16,13,12,13,15,16,20]
 },
 {
-	names:split('Nahum Na Nah Nah Na')
+	names:split('Nahum Na Nah Na')
 	,verses:[15,13,19]
 },
 {
@@ -233,7 +233,7 @@ bible.Books = [
 	,verses:[23,22,21,32,33,24]
 },
 {
-	names:split('Philippians Pp Phi Phil Phi')
+	names:split('Philippians Phi Phil Phi')
 	,verses:[30,30,21,23]
 },
 {
@@ -261,7 +261,7 @@ bible.Books = [
 	,verses:[16,15,15]
 },
 {
-	names:split('Philemon Pm Phile Phile Philm Pm')
+	names:split('Philemon Pm Phile Philm Pm')
 	,verses:[25]
 },
 {
@@ -293,7 +293,7 @@ bible.Books = [
 	,verses:[14]
 },
 {
-	names:split('Jude Jude Jude')
+	names:split('Jude Jude')
 	,verses:[25]
 },
 {

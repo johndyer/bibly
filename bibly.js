@@ -1,11 +1,10 @@
 ﻿
-
 // adapted from old scripturizer.js code
 
 (function() {
 	// book names list	
 	var bibly = {
-			version: '0.8',
+			version: '0.8.4',
 			maxNodes: 500,
 			className: 'bibly_reference',
 			enablePopups: true,
@@ -22,8 +21,8 @@
 		defaultPopupVersion = 'ESV',
 		allowedPopupVersions = ['NET','ESV','KJV','LEB','DARBY'],
 		bok = bible.genNames(),
-		ver =  '(\\d+)([\.:](\\d+))?(\\s?[-–&]\\s?(\\d+))?',  // 1 OR 1:1 OR 1:1-2
-		ver2 =  '(\\d+)[\.:](\\d+)(\\s?[-–&]\\s?(\\d+))?',  // NOT 1 OR 1:1 OR 1:1-2 (this is needed so verses after semi-colons require a :. Problem John 3:16; 2 Cor 3:3 <-- the 2 will be a verse)
+		ver =  '(1?\\d{1,2})([\.:](\\d+))?(\\s?[-–&]\\s?(\\d+))?',  // 1 OR 1:1 OR 1:1-2, 100, but not 1000
+		ver2 =  '(1?\\d{1,2})[\.:](\\d+)(\\s?[-–&]\\s?(\\d+))?',  // NOT 1 OR 1:1 OR 1:1-2 (this is needed so verses after semi-colons require a :. Problem John 3:16; 2 Cor 3:3 <-- the 2 will be a verse)
 		regexPattern = '\\b('+bok+')\.?\\s+('+ver+'((\\s?,\\s?'+ver+')|(\\s?;\\s?'+ver2+'))*)\\b',
 		referenceRegex = new RegExp(regexPattern, 'mi'),
 		verseRegex = new RegExp(ver, 'mi'),
@@ -534,7 +533,9 @@
 	addEvent(doc,'DOMContentLoaded',startBibly);
 	addEvent(win,'load',startBibly);
 	
+	
 	// export
+	bibly.startBibly = startBibly;
 	bibly.scanForReferences = scanForReferences;
 	win.bibly = bibly;	
 })();

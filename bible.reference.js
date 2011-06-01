@@ -1,4 +1,4 @@
-﻿bible.parseReference = function (textReference) {
+﻿﻿bible.parseReference = function (textReference) {
 
 	var 
 		bookIndex = -1,
@@ -7,7 +7,7 @@
 		chapter2 = -1,
 		verse2 = -1,
 		input = new String(textReference).replace('&ndash;','-').replace('–','-'),
-		i, j,
+		i, j, il, jl,
 		afterRange = false,
 		afterSeparator = false,
 		startedNumber = false,
@@ -34,9 +34,11 @@
 		possibleMatch = possibleMatch.replace(/\s+$/,'').replace(/\.+$/,'').toLowerCase();
 
 		// go through all books and test all names
-		for (i = bible.Books.length - 1; i >= 0; i--) {
+		//for (i = bible.Books.length - 1; i >= 0; i--) {
+		for (i = 0, il = bible.Books.length; i < il ; i++) {
 			// test each name starting with the full name, then short code, then abbreviation, then alternates
-			for (j = 0; j < bible.Books[i].names.length; j++) {
+			//for (j = 0; j < bible.Books[i].names.length; j++) {
+			for (j = 0, jl = bible.Books[i].names.length; j<jl; j++) {
 				name = new String(bible.Books[i].names[j]).toLowerCase();
 
 				if (possibleMatch == name) {

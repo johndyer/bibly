@@ -10,7 +10,7 @@ bibly_files.append('bible.reference.js')
 bibly_files.append('bibly.js')
 
 bibly_filename = 'bibly'
-bibly_version = '0.8'
+bibly_version = '0.8.4'
 bibly_version_path = 'build/' + bibly_version + '/'
 bibly_active_path = 'build/'
 
@@ -21,6 +21,7 @@ if os.path.exists(bibly_version_path) == 0:
  
 biblyjs = bibly_filename + '.js'
 biblyjs_min = bibly_filename + '.min.js'
+biblybookmarkletjs_min = bibly_filename + '.bookmarklet.js'
 
 # combine files
 code = ''
@@ -36,10 +37,22 @@ tmp_file.close()
 # copy versioned file to active path
 shutil.copy2(bibly_version_path + biblyjs, bibly_active_path + biblyjs)
 
+
+# create bookmarklet
+src_file = open('bibly.bookmarklet.js','r')
+code += src_file.read()
+
+tmp_file = open(bibly_active_path + biblybookmarkletjs_min,'w')
+tmp_file.write(code)
+tmp_file.close()
+
+
 # create minified and copy it
 os.system('java -jar compiler.jar --js ' + bibly_version_path + biblyjs + ' --js_output_file ' + bibly_version_path + biblyjs_min)
+#os.system('java -jar compiler.jar --js ' + bibly_active_path + biblybookmarkletjs_min + ' --js_output_file ' + bibly_active_path + biblybookmarkletjs_min)
 os.system('java -jar yuicompressor-2.4.2.jar ' + bibly_version_path + biblyjs + ' -o ' + bibly_version_path +  biblyjs_min + '.yui --charset utf-8 -v')
 shutil.copy2(bibly_version_path + biblyjs_min , bibly_active_path + biblyjs_min)
+
 
 # CSS files
 
@@ -80,6 +93,7 @@ addHeader('bibly.copyright.js', bibly_active_path + biblyjs)
 addHeader('bibly.copyright.js', bibly_version_path + biblyjs_min)
 addHeader('bibly.copyright.js', bibly_active_path + biblyjs_min)
 
+addHeader('bibly.copyright.js', bibly_active_path + biblybookmarkletjs_min)
 
 addHeader('bibly.copyright.css', bibly_version_path + biblycss)
 addHeader('bibly.copyright.css', bibly_active_path + biblycss)

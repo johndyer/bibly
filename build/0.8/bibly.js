@@ -78,7 +78,7 @@ bible.Books = [
 	,verses:[18,24,17,24,15,27,26,35,27,43,23,24,33,15,63,10,18,28,51,9,45,34,16,33]
 },
 {
-	names:split('Judges Jg Jud Jdg Ju Jdgs Judg')
+	names:split('Judges Jg Jud Jdg Ju Jdgs')
 	,verses:[36,23,31,24,31,40,25,35,57,18,40,15,25,20,20,31,13,31,30,48,25]
 },
 {
@@ -86,19 +86,19 @@ bible.Books = [
 	,verses:[22,23,18,22]
 },
 {
-	names:ordinals(1,'Samuel Sa Sam')
+	names:ordinals(1,'Samuel Sa Sam S')
 	,verses:[28,36,21,22,12,21,17,22,27,27,15,25,23,52,35,23,58,30,24,42,15,23,29,22,44,25,12,25,11,31,13]
 },
 {
-	names:ordinals(2,'Samuel Sa Sam')
+	names:ordinals(2,'Samuel Sa Sam S')
 	,verses:[27,32,39,12,25,23,29,18,13,19,27,31,39,33,37,23,29,33,43,26,22,51,39,25]
 },
 {
-	names:ordinals(1,'Kings Ki King Kin Kngs')
+	names:ordinals(1,'Kings K King Kin Kngs Kngs')
 	,verses:[53,46,28,34,18,38,51,66,28,29,43,33,34,31,34,34,24,46,21,43,29,53]
 },
 {
-	names:ordinals(2,'Kings Ki King Kin Kngs')
+	names:ordinals(2,'Kings K King Kin Kngs Kngs')
 	,verses:[18,25,27,44,27,33,20,29,37,36,21,21,25,29,38,20,41,37,37,21,26,20,37,20,30]
 },
 {
@@ -142,7 +142,7 @@ bible.Books = [
 	,verses:[17,17,11,16,16,13,13,14]
 },
 {
-	names:split('Isaiah Isa')
+	names:split('Isaiah Is Isa')
 	,verses:[31,22,26,6,30,13,25,22,21,34,16,6,22,32,9,14,14,7,25,6,17,25,18,23,12,21,13,29,24,33,9,20,24,17,10,22,38,22,8,31,29,25,28,28,25,13,15,22,26,11,23,15,12,17,13,12,21,14,21,22,11,12,19,12,25,24]
 },
 {
@@ -186,7 +186,7 @@ bible.Books = [
 	,verses:[16,13,12,13,15,16,20]
 },
 {
-	names:split('Nahum Na Nah Na')
+	names:split('Nahum Na Nah Nah Na')
 	,verses:[15,13,19]
 },
 {
@@ -250,7 +250,7 @@ bible.Books = [
 	,verses:[23,22,21,32,33,24]
 },
 {
-	names:split('Philippians Phi Phil Phi')
+	names:split('Philippians Pp Phi Phil Phi')
 	,verses:[30,30,21,23]
 },
 {
@@ -278,7 +278,7 @@ bible.Books = [
 	,verses:[16,15,15]
 },
 {
-	names:split('Philemon Pm Phile Philm Pm')
+	names:split('Philemon Pm Phile Phile Philm Pm')
 	,verses:[25]
 },
 {
@@ -310,7 +310,7 @@ bible.Books = [
 	,verses:[14]
 },
 {
-	names:split('Jude Jude')
+	names:split('Jude Jude Jude')
 	,verses:[25]
 },
 {
@@ -329,7 +329,7 @@ bible.genNames= function() {
 	
 	return names.join('|');
 }
-﻿﻿bible.parseReference = function (textReference) {
+﻿bible.parseReference = function (textReference) {
 
 	var 
 		bookIndex = -1,
@@ -338,7 +338,7 @@ bible.genNames= function() {
 		chapter2 = -1,
 		verse2 = -1,
 		input = new String(textReference).replace('&ndash;','-').replace('–','-'),
-		i, j, il, jl,
+		i, j,
 		afterRange = false,
 		afterSeparator = false,
 		startedNumber = false,
@@ -365,11 +365,9 @@ bible.genNames= function() {
 		possibleMatch = possibleMatch.replace(/\s+$/,'').replace(/\.+$/,'').toLowerCase();
 
 		// go through all books and test all names
-		//for (i = bible.Books.length - 1; i >= 0; i--) {
-		for (i = 0, il = bible.Books.length; i < il ; i++) {
+		for (i = bible.Books.length - 1; i >= 0; i--) {
 			// test each name starting with the full name, then short code, then abbreviation, then alternates
-			//for (j = 0; j < bible.Books[i].names.length; j++) {
-			for (j = 0, jl = bible.Books[i].names.length; j<jl; j++) {
+			for (j = 0; j < bible.Books[i].names.length; j++) {
 				name = new String(bible.Books[i].names[j]).toLowerCase();
 
 				if (possibleMatch == name) {
@@ -551,12 +549,13 @@ bible.Reference = function () {
 	}
 };
 ﻿
+
 // adapted from old scripturizer.js code
 
 (function() {
 	// book names list	
 	var bibly = {
-			version: '0.8.4',
+			version: '0.8',
 			maxNodes: 500,
 			className: 'bibly_reference',
 			enablePopups: true,
@@ -573,8 +572,8 @@ bible.Reference = function () {
 		defaultPopupVersion = 'ESV',
 		allowedPopupVersions = ['NET','ESV','KJV','LEB','DARBY'],
 		bok = bible.genNames(),
-		ver =  '(1?\\d{1,2})([\.:](\\d+))?(\\s?[-–&]\\s?(\\d+))?',  // 1 OR 1:1 OR 1:1-2, 100, but not 1000
-		ver2 =  '(1?\\d{1,2})[\.:](\\d+)(\\s?[-–&]\\s?(\\d+))?',  // NOT 1 OR 1:1 OR 1:1-2 (this is needed so verses after semi-colons require a :. Problem John 3:16; 2 Cor 3:3 <-- the 2 will be a verse)
+		ver =  '(\\d+)([\.:](\\d+))?(\\s?[-–&]\\s?(\\d+))?',  // 1 OR 1:1 OR 1:1-2
+		ver2 =  '(\\d+)[\.:](\\d+)(\\s?[-–&]\\s?(\\d+))?',  // NOT 1 OR 1:1 OR 1:1-2 (this is needed so verses after semi-colons require a :. Problem John 3:16; 2 Cor 3:3 <-- the 2 will be a verse)
 		regexPattern = '\\b('+bok+')\.?\\s+('+ver+'((\\s?,\\s?'+ver+')|(\\s?;\\s?'+ver2+'))*)\\b',
 		referenceRegex = new RegExp(regexPattern, 'mi'),
 		verseRegex = new RegExp(ver, 'mi'),
@@ -1085,9 +1084,7 @@ bible.Reference = function () {
 	addEvent(doc,'DOMContentLoaded',startBibly);
 	addEvent(win,'load',startBibly);
 	
-	
 	// export
-	bibly.startBibly = startBibly;
 	bibly.scanForReferences = scanForReferences;
 	win.bibly = bibly;	
 })();
