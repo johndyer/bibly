@@ -1,3 +1,20 @@
+﻿/*!
+ * bib.ly
+ * Bible reference shortener and popup linker
+ * http://bib.ly/
+ *
+ * Copyright 2011, John Dyer (http://j.hn/)
+ *
+ * Scripture quotations marked "ESV" are taken from The Holy Bible, English Standard Version. 
+ * Copyright ©2001 by Crossway Bibles, a publishing ministry of Good News Publishers. Used by permission. 
+ * All rights reserved. Text provided by the Crossway Bibles Web Service (http://www.gnpcb.org/esv/share/services/).
+ *
+ * NET Bible® copyright ©1996-2006 by Biblical Studies Press, L.L.C. (http://bible.org/)
+ *
+ * For all other versions, this site uses the Biblia web services (http://biblia.com/) 
+ * from Logos Bible Software (http://www.logos.com/)
+ */
+
 var bible = {};
 (function() {
 	// splits the names into multiples
@@ -197,7 +214,7 @@ bible.Books = [
 	,verses:[25,23,17,25,48,34,29,34,38,42,30,50,58,36,39,28,27,35,30,34,46,46,39,51,46,75,66,20]
 },
 {
-	names:split('Mark Mk Mar Mrk')
+	names:split('Mark Mk Mrk')
 	,verses:[45,28,35,41,43,56,37,38,50,52,33,44,37,72,47,20]
 },
 {
@@ -327,108 +344,132 @@ bible.genNames= function() {
 		startedNumber = false,
 		currentNumber = '',
 		name,
-		possibleMatch,
+		possibleMatch = null,
 		c;
-
-
-	// go through all books and test all names
-	for (i = bible.Books.length - 1; i >= 0; i--) {
-		// test each name starting with the full name, then short code, then abbreviation, then alternates
-		for (j = 0; j < bible.Books[i].names.length; j++) {
-			name = new String(bible.Books[i].names[j]).toLowerCase();
-			possibleMatch = input.substring(0, Math.floor(name.length, input.length)).toLowerCase();
-
-			if (possibleMatch == name) {
-				bookIndex = i;
-				input = input.substring(name.length);
-				break;
-			}
-
-		}
-		if (bookIndex > -1)
+		
+	// take the entire reference (John 1:1 or 1 Cor) and move backwards until we find a letter or space
+	// 'John 1:1' => 'John '
+	// '1 Cor' => '1 Cor'
+	// 'July15' => 'July'
+	for (i=input.length; i>=0; i--) {
+		if (/[A-Za-z\s]/.test(input.substring(i-1,i))) {
+			possibleMatch = input.substring(0,i);
 			break;
-	}
-
-	if (bookIndex < 0)
-		return null;
-
-
-	for (i = 0; i < input.length; i++) {
-		c = input.charAt(i);
-
-		if (c == ' ' || isNaN(c)) {
-			if (!startedNumber)
-				continue;
-
-			if (c == '-' || c == '–') {
-				afterRange = true;
-				afterSeparator = false;
-			} else if (c == ':' || c == ',' || c == '.') {
-				afterSeparator = true;
-			} else {
-				// ignore
-			}
-
-			// reset
-			currentNumber = '';
-			startedNumber = false;
-
-		} else {
-			startedNumber = true;
-			currentNumber += c;
-
-			if (afterSeparator) {
-				if (afterRange) {
-					verse2 = parseInt(currentNumber);
-				} else { // 1:1
-					verse1 = parseInt(currentNumber);
-				}
-			} else {
-				if (afterRange) {
-					chapter2 = parseInt(currentNumber);
-				} else { // 1
-					chapter1 = parseInt(currentNumber);
-				}
-			}
 		}
 	}
+	
+	if (possibleMatch != null) {
+		
+		// tear off any remaining spaces
+		// 'John ' => 'John'
+		possibleMatch = possibleMatch.replace(/\s+$/,'').replace(/\.+$/,'').toLowerCase();
 
-	// reassign 1:1-2	
-	if (chapter1 > 0 && verse1 > 0 && chapter2 > 0 && verse2 <= 0) {
-		verse2 = chapter2;
-		chapter2 = chapter1;
-	}
-	// fix 1-2:5
-	if (chapter1 > 0 && verse1 <= 0 && chapter2 > 0 && verse2 > 0) {
-		verse1 = 1;
-	}
+		// go through all books and test all names
+		for (i = bible.Books.length - 1; i >= 0; i--) {
+			// test each name starting with the full name, then short code, then abbreviation, then alternates
+			for (j = 0; j < bible.Books[i].names.length; j++) {
+				name = new String(bible.Books[i].names[j]).toLowerCase();
 
-	// just book
-	if (bookIndex > -1 && chapter1 <= 0 && verse1 <= 0 && chapter2 <= 0 && verse2 <= 0) {
-		chapter1 = 1;
-		//verse1 = 1;
-	}
+				if (possibleMatch == name) {
+					bookIndex = i;
+					input = input.substring(name.length);
+					break;
+				}
 
-	// validate max chapter
-	if ( typeof bible.Books[bookIndex].verses  != 'undefined') {
-		if (chapter1 == -1) {
-			chapter1 = 1;
-		} else if (chapter1 > bible.Books[bookIndex].verses.length) {
-			chapter1 = bible.Books[bookIndex].verses.length;
-			if (verse1 > 0)
+			}
+		}
+
+		if (bookIndex > -1) {
+
+			for (i = 0; i < input.length; i++) {
+				c = input.charAt(i);
+
+				if (c == ' ' || isNaN(c)) {
+					if (!startedNumber)
+						continue;
+
+					if (c == '-' || c == '–') {
+						afterRange = true;
+						afterSeparator = false;
+					} else if (c == ':' || c == ',' || c == '.') {
+						afterSeparator = true;
+					} else {
+						// ignore
+					}
+
+					// reset
+					currentNumber = '';
+					startedNumber = false;
+
+				} else {
+					startedNumber = true;
+					currentNumber += c;
+
+					if (afterSeparator) {
+						if (afterRange) {
+							verse2 = parseInt(currentNumber);
+						} else { // 1:1
+							verse1 = parseInt(currentNumber);
+						}
+					} else {
+						if (afterRange) {
+							chapter2 = parseInt(currentNumber);
+						} else { // 1
+							chapter1 = parseInt(currentNumber);
+						}
+					}
+				}
+			}
+			
+			// for books with only one chapter, treat the chapter as a vers
+			if (bible.Books[bookIndex].verses.length == 1) {
+				
+				// Jude 6 ==> Jude 1:6
+				if (chapter1 > 1 && verse1 == -1) {
+					verse1 = chapter1;
+					chapter1 = 1;
+				}
+			}	
+			
+
+			// reassign 1:1-2	
+			if (chapter1 > 0 && verse1 > 0 && chapter2 > 0 && verse2 <= 0) {
+				verse2 = chapter2;
+				chapter2 = chapter1;
+			}
+			// fix 1-2:5
+			if (chapter1 > 0 && verse1 <= 0 && chapter2 > 0 && verse2 > 0) {
 				verse1 = 1;
-		}
+			}
 
-		// validate max verse
-		if (verse1 > bible.Books[bookIndex].verses[chapter1 - 1]) {
-			verse1 = bible.Books[bookIndex].verses[chapter1 - 1];
-		}
-		if (verse2 <= verse1) {
-			chapter2 = -1;
-			verse2 = -1;
+			// just book
+			if (bookIndex > -1 && chapter1 <= 0 && verse1 <= 0 && chapter2 <= 0 && verse2 <= 0) {
+				chapter1 = 1;
+				//verse1 = 1;
+			}
+
+			// validate max chapter
+			if ( typeof bible.Books[bookIndex].verses  != 'undefined') {
+				if (chapter1 == -1) {
+					chapter1 = 1;
+				} else if (chapter1 > bible.Books[bookIndex].verses.length) {
+					chapter1 = bible.Books[bookIndex].verses.length;
+					if (verse1 > 0)
+						verse1 = 1;
+				}
+
+				// validate max verse
+				if (verse1 > bible.Books[bookIndex].verses[chapter1 - 1]) {
+					verse1 = bible.Books[bookIndex].verses[chapter1 - 1];
+				}
+				if (verse2 <= verse1) {
+					chapter2 = -1;
+					verse2 = -1;
+				}
+			}
 		}
 	}
-
+		
 	// finalize
 	return bible.Reference(bookIndex, chapter1, verse1, chapter2, verse2);
 
@@ -448,7 +489,7 @@ bible.Reference = function () {
 		// error		
 	} else if (args.length == 1 && typeof args[0] == 'string') { // a string that needs to be parsed
 		return bible.parseReference(args[0]);
-	} else if (args.length == 1) { // unknonw
+	} else if (args.length == 1) { // unknown
 		return null;
 	} else {
 		_bookIndex = args[0];
@@ -492,7 +533,7 @@ bible.Reference = function () {
 			else if (chapter1 > 0 && verse1 > 0 && chapter2 > 0 && verse2 > 0) // John 1:1-2:2
 				return chapter1 + cvSeparator + verse1 + ccSeparator + ((chapter1 != chapter2) ? chapter2 + cvSeparator : '') + verse2;
 			else
-				return 'unknown';
+				return '?';
 		},
 
 		toString: function () {
@@ -514,7 +555,7 @@ bible.Reference = function () {
 (function() {
 	// book names list	
 	var bibly = {
-			version: '0.7',
+			version: '0.8',
 			maxNodes: 500,
 			className: 'bibly_reference',
 			enablePopups: true,
@@ -527,16 +568,15 @@ bible.Reference = function () {
 		},	
 		win = window,
 		doc = document,
-		body = null,
-		
+		body = null,		
 		defaultPopupVersion = 'ESV',
 		allowedPopupVersions = ['NET','ESV','KJV','LEB','DARBY'],
 		bok = bible.genNames(),
 		ver =  '(\\d+)([\.:](\\d+))?(\\s?[-–&]\\s?(\\d+))?',  // 1 OR 1:1 OR 1:1-2
 		ver2 =  '(\\d+)[\.:](\\d+)(\\s?[-–&]\\s?(\\d+))?',  // NOT 1 OR 1:1 OR 1:1-2 (this is needed so verses after semi-colons require a :. Problem John 3:16; 2 Cor 3:3 <-- the 2 will be a verse)
 		regexPattern = '\\b('+bok+')\.?\\s+('+ver+'((\\s?,\\s?'+ver+')|(\\s?;\\s?'+ver2+'))*)\\b',
-		referenceRegex = new RegExp(regexPattern, 'm'),
-		verseRegex = new RegExp(ver, 'm'),
+		referenceRegex = new RegExp(regexPattern, 'mi'),
+		verseRegex = new RegExp(ver, 'mi'),
 		skipRegex = /^(a|script|style|textarea)$/i,
 		lastReference = null,
 		textHandler = function(node) {
@@ -545,6 +585,9 @@ bible.Reference = function () {
 				referenceNode, 
 				afterReferenceNode,
 				newLink;
+			
+			// reset this
+			lastReference = null;
 			
 			if (match) {
 				val = match[0];
@@ -587,28 +630,35 @@ bible.Reference = function () {
 				remainder = separator.splitText(startRemainder);
 			}	
 			
-			// replace the referenceNode TEXT with an anchor node
-			newLink = node.ownerDocument.createElement('A');				
-			node.parentNode.replaceChild(newLink, referenceNode);			
+			// test if the text matches a real reference
 			refText = referenceNode.nodeValue;	
 			reference = parseRefText(refText);
-			newLink.setAttribute('href', reference.toShortUrl() + (bibly.linkVersion != '' ? '.' + bibly.linkVersion : ''));
-			newLink.setAttribute('title', 'Read ' + reference.toString());
-			newLink.setAttribute('rel', reference.toString());
-			newLink.setAttribute('class', bibly.className);
-			newLink.appendChild(referenceNode);
-			
-			if (bibly.enablePopups) {
-				addEvent(newLink,'mouseover', handleLinkMouseOver);
-				addEvent(newLink,'mouseout', handleLinkMouseOut);
+			if (typeof reference != 'undefined' && reference.isValid()) {
+				
+				// replace the referenceNode TEXT with an anchor node to bib.ly
+				newLink = node.ownerDocument.createElement('A');				
+				node.parentNode.replaceChild(newLink, referenceNode);	
+				newLink.setAttribute('href', reference.toShortUrl() + (bibly.linkVersion != '' ? '.' + bibly.linkVersion : ''));
+				newLink.setAttribute('title', 'Read ' + reference.toString());
+				newLink.setAttribute('rel', reference.toString());
+				newLink.setAttribute('class', bibly.className);
+				newLink.appendChild(referenceNode);
+				
+				if (bibly.enablePopups) {
+					addEvent(newLink,'mouseover', handleLinkMouseOver);
+					addEvent(newLink,'mouseout', handleLinkMouseOut);
+				}
+				
+				// if there was a separator, now parse the stuff after it
+				if (remainder) {				
+					newLink = createLinksFromNode(node, remainder);				
+				}	
+				
+				return newLink;
+			} else {
+				// for false matches, return it unchanged
+				return referenceNode;
 			}
-			
-			// if there was a separator, now parse the stuff after it
-			if (remainder) {				
-				newLink = createLinksFromNode(node, remainder);				
-			}	
-			
-			return newLink;
 		},
 		parseRefText = function(refText) {
 			
@@ -619,9 +669,11 @@ bible.Reference = function () {
 				p1, p3, p5;
 			
 			if (reference != null && typeof reference.isValid != 'undefined' && reference.isValid()) {
+				
 				lastReference = reference;
 				return reference;
-			} else {
+				
+			} else if (lastReference  != null) {
 				
 				// single verse match (3)
 				match = verseRegex.exec(refText);				
@@ -638,44 +690,39 @@ bible.Reference = function () {
 						p5 = 0;
 					}
 					
-					if (
-						// single verse (1)
-						p3 == 0 && p5 == 0) {
+					// single verse (1)
+					if (p3 == 0 && p5 == 0) {
 											
 						lastReference.verse1 = parseInt(match[1],10);
 						lastReference.chapter2 = -1;
 						lastReference.verse2 = -1;
 					
-					} else if (
-						// 1:2
-						p3 != 0 && p5 == 0) {
+					// 1:2
+					} else if ( p3 != 0 && p5 == 0) {
 						
 						lastReference.chapter1 = parseInt(match[1],10);
 						lastReference.verse1 = parseInt(match[3],10);
 						lastReference.chapter2 = -1;
 						lastReference.verse2 = -1;		
 					
-					} else if (
-						// 1:2-3
-						p3 != 0 && p5 != 0) {
+					// 1:2-3
+					} else if (p3 != 0 && p5 != 0) {
 						
 						lastReference.chapter1 = parseInt(match[1],10);
 						lastReference.verse1 = parseInt(match[3],10);
 						lastReference.chapter2 = -1;
 						lastReference.verse2 = parseInt(match[5],10);;		
-					} else if (
-						// 1-2
-						p3 == 0 && p5 != 0) {
+					
+					// 1-2
+					} else if (p3 == 0 && p5 != 0) {
 						
 						lastReference.verse1 = parseInt(match[1],10);
 						lastReference.chapter2 = -1;
 						lastReference.verse2 = parseInt(match[5],10);;		
-					}					
-									
+					}
 					
 					return lastReference;
 				}
-											
 			
 				// failure
 				return {

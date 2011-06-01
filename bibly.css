@@ -8,6 +8,7 @@
 	top: 0;
 	left: 0;
 	display: none;
+	z-index: 777777;
 
 	/* size */
 	width: 270px;		

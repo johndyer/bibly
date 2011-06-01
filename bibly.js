@@ -6,7 +6,7 @@
 	// book names list	
 	var bibly = {
 			version: '0.8',
-			maxNodes: 200,
+			maxNodes: 500,
 			className: 'bibly_reference',
 			enablePopups: true,
 			popupVersion: 'ESV',
@@ -18,8 +18,7 @@
 		},	
 		win = window,
 		doc = document,
-		body = null,
-		
+		body = null,		
 		defaultPopupVersion = 'ESV',
 		allowedPopupVersions = ['NET','ESV','KJV','LEB','DARBY'],
 		bok = bible.genNames(),

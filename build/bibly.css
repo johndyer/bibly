@@ -1,3 +1,11 @@
+/*!
+ * bib.ly
+ * Bible reference shortener and popup linker
+ * http://bib.ly/
+ *
+ * Copyright 2011, John Dyer (http://j.hn/)
+ */
+
 
 .bibly_reference {
 }
@@ -8,6 +16,7 @@
 	top: 0;
 	left: 0;
 	display: none;
+	z-index: 777777;
 
 	/* size */
 	width: 270px;		

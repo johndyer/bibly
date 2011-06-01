@@ -38,22 +38,14 @@
 			// test each name starting with the full name, then short code, then abbreviation, then alternates
 			for (j = 0; j < bible.Books[i].names.length; j++) {
 				name = new String(bible.Books[i].names[j]).toLowerCase();
-				//possibleMatch = input.substring(0, Math.floor(name.length, input.length)).toLowerCase();
-				//possibleMatch = input.toLowerCase();
-				//possibleMatch = input.substring(0, Math.floor(name.length, input.length)).toLowerCase();
-				
-				console.log((possibleMatch == name), (possibleMatch === name), name, possibleMatch, input);
-				
+
 				if (possibleMatch == name) {
-				//if (input.toLowerCase() == name.toLowerCase()) {
 					bookIndex = i;
 					input = input.substring(name.length);
 					break;
 				}
 
 			}
-			if (bookIndex > -1)
-				break;
 		}
 
 		if (bookIndex > -1) {
