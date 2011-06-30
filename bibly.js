@@ -4,7 +4,7 @@
 (function() {
 	// book names list	
 	var bibly = {
-			version: '0.8.4',
+			version: '0.8.5',
 			maxNodes: 500,
 			className: 'bibly_reference',
 			enablePopups: true,
@@ -21,8 +21,8 @@
 		defaultPopupVersion = 'ESV',
 		allowedPopupVersions = ['NET','ESV','KJV','LEB','DARBY'],
 		bok = bible.genNames(),
-		ver =  '(1?\\d{1,2})([\.:](\\d+))?(\\s?[-–&]\\s?(\\d+))?',  // 1 OR 1:1 OR 1:1-2, 100, but not 1000
-		ver2 =  '(1?\\d{1,2})[\.:](\\d+)(\\s?[-–&]\\s?(\\d+))?',  // NOT 1 OR 1:1 OR 1:1-2 (this is needed so verses after semi-colons require a :. Problem John 3:16; 2 Cor 3:3 <-- the 2 will be a verse)
+		ver =  '(1?\\d{1,2})([\.:]\\s?(\\d+))?(\\s?[-–&]\\s?(\\d+))?',  // 1 OR 1:1 OR 1:1-2, 100, but not 1000
+		ver2 =  '(1?\\d{1,2})[\.:]\\s?(\\d+)(\\s?[-–&]\\s?(\\d+))?',  // NOT 1 OR 1:1 OR 1:1-2 (this is needed so verses after semi-colons require a :. Problem John 3:16; 2 Cor 3:3 <-- the 2 will be a verse)
 		regexPattern = '\\b('+bok+')\.?\\s+('+ver+'((\\s?,\\s?'+ver+')|(\\s?;\\s?'+ver2+'))*)\\b',
 		referenceRegex = new RegExp(regexPattern, 'mi'),
 		verseRegex = new RegExp(ver, 'mi'),

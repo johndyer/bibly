@@ -6,7 +6,7 @@
 		verse1 = -1,
 		chapter2 = -1,
 		verse2 = -1,
-		input = new String(textReference).replace('&ndash;','-').replace('–','-'),
+		input = new String(textReference).replace('&ndash;','-').replace('–','-').replace(/(\d+[\.:])\s+(\d+)/gi, '$1$2'),
 		i, j, il, jl,
 		afterRange = false,
 		afterSeparator = false,
@@ -15,6 +15,7 @@
 		name,
 		possibleMatch = null,
 		c;
+	
 		
 	// take the entire reference (John 1:1 or 1 Cor) and move backwards until we find a letter or space
 	// 'John 1:1' => 'John '
@@ -22,8 +23,8 @@
 	// 'July15' => 'July'
 	for (i=input.length; i>=0; i--) {
 		if (/[A-Za-z\s]/.test(input.substring(i-1,i))) {
-			possibleMatch = input.substring(0,i);
-			break;
+			possibleMatch = input.substring(0,i);					
+			break;			
 		}
 	}
 	
