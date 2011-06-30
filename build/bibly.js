@@ -337,7 +337,7 @@ bible.genNames= function() {
 		verse1 = -1,
 		chapter2 = -1,
 		verse2 = -1,
-		input = new String(textReference).replace('&ndash;','-').replace('–','-'),
+		input = new String(textReference).replace('&ndash;','-').replace('–','-').replace(/(\d+[\.:])\s+(\d+)/gi, '$1$2'),
 		i, j, il, jl,
 		afterRange = false,
 		afterSeparator = false,
@@ -346,6 +346,7 @@ bible.genNames= function() {
 		name,
 		possibleMatch = null,
 		c;
+	
 		
 	// take the entire reference (John 1:1 or 1 Cor) and move backwards until we find a letter or space
 	// 'John 1:1' => 'John '
@@ -353,8 +354,8 @@ bible.genNames= function() {
 	// 'July15' => 'July'
 	for (i=input.length; i>=0; i--) {
 		if (/[A-Za-z\s]/.test(input.substring(i-1,i))) {
-			possibleMatch = input.substring(0,i);
-			break;
+			possibleMatch = input.substring(0,i);					
+			break;			
 		}
 	}
 	
@@ -556,7 +557,7 @@ bible.Reference = function () {
 (function() {
 	// book names list	
 	var bibly = {
-			version: '0.8.4',
+			version: '0.8.5',
 			maxNodes: 500,
 			className: 'bibly_reference',
 			enablePopups: true,
@@ -573,8 +574,8 @@ bible.Reference = function () {
 		defaultPopupVersion = 'ESV',
 		allowedPopupVersions = ['NET','ESV','KJV','LEB','DARBY'],
 		bok = bible.genNames(),
-		ver =  '(1?\\d{1,2})([\.:](\\d+))?(\\s?[-–&]\\s?(\\d+))?',  // 1 OR 1:1 OR 1:1-2, 100, but not 1000
-		ver2 =  '(1?\\d{1,2})[\.:](\\d+)(\\s?[-–&]\\s?(\\d+))?',  // NOT 1 OR 1:1 OR 1:1-2 (this is needed so verses after semi-colons require a :. Problem John 3:16; 2 Cor 3:3 <-- the 2 will be a verse)
+		ver =  '(1?\\d{1,2})([\.:]\\s?(\\d+))?(\\s?[-–&]\\s?(\\d+))?',  // 1 OR 1:1 OR 1:1-2, 100, but not 1000
+		ver2 =  '(1?\\d{1,2})[\.:]\\s?(\\d+)(\\s?[-–&]\\s?(\\d+))?',  // NOT 1 OR 1:1 OR 1:1-2 (this is needed so verses after semi-colons require a :. Problem John 3:16; 2 Cor 3:3 <-- the 2 will be a verse)
 		regexPattern = '\\b('+bok+')\.?\\s+('+ver+'((\\s?,\\s?'+ver+')|(\\s?;\\s?'+ver2+'))*)\\b',
 		referenceRegex = new RegExp(regexPattern, 'mi'),
 		verseRegex = new RegExp(ver, 'mi'),
