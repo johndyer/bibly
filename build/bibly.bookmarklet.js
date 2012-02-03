@@ -557,7 +557,7 @@ bible.Reference = function () {
 (function() {
 	// book names list	
 	var bibly = {
-			version: '0.8.5',
+			version: '0.8.6',
 			maxNodes: 500,
 			className: 'bibly_reference',
 			enablePopups: true,
@@ -566,7 +566,9 @@ bible.Reference = function () {
 			bibliaApiKey: '436e02d01081d28a78a45d65f66f4416', 
 			autoStart: true,
 			startNodeId: '',
-			maxVerses: 4
+			maxVerses: 4,
+			ignoreClassName: 'bibly_ignore',
+			ignoreTags: ['h1','h2','h3','h4']
 		},	
 		win = window,
 		doc = document,
@@ -579,7 +581,7 @@ bible.Reference = function () {
 		regexPattern = '\\b('+bok+')\.?\\s+('+ver+'((\\s?,\\s?'+ver+')|(\\s?;\\s?'+ver2+'))*)\\b',
 		referenceRegex = new RegExp(regexPattern, 'mi'),
 		verseRegex = new RegExp(ver, 'mi'),
-		skipRegex = /^(a|script|style|textarea)$/i,
+		alwaysSkipTags = ['a','script','style','textarea'],
 		lastReference = null,
 		textHandler = function(node) {
 			var match = referenceRegex.exec(node.data), 
@@ -982,7 +984,10 @@ bible.Reference = function () {
 			traverseDOM(node.childNodes[0], 1, textHandler);		
 		},
 		traverseDOM = function(node, depth, textHandler) {
-			var count = 0;
+			var count = 0,
+				//skipRegex = /^(a|script|style|textarea)$/i,
+				skipRegex = new RegExp('^(' + alwaysSkipTags.concat(bibly.ignoreTags).join('|') + ')$', 'i');
+				
 				
 			while (node && depth > 0) {
 				count++;
@@ -993,7 +998,7 @@ bible.Reference = function () {
 
 				switch (node.nodeType) {
 					case 1: // ELEMENT_NODE
-						if (!skipRegex.test(node.tagName) && node.childNodes.length > 0) {
+						if (!skipRegex.test(node.tagName.toLowerCase()) && node.childNodes.length > 0 && (bibly.ignoreClassName == '' || node.className.toString().indexOf(bibly.ignoreClassName) == -1)) {											
 							node = node.childNodes[0];
 							depth ++;
 							continue;
@@ -1033,6 +1038,41 @@ bible.Reference = function () {
 			}			
 		},		
 		isStarted = false,
+		extend = function() {
+			// borrowed from ender
+			var options, name, src, copy, 
+				target = arguments[0] || {},
+				i = 1,
+				length = arguments.length;	
+
+			// Handle case when target is a string or something (possible in deep copy)
+			if ( typeof target !== "object" && typeof target !== "function" ) {
+				target = {};
+			}
+
+			for ( ; i < length; i++ ) {
+				// Only deal with non-null/undefined values
+				if ( (options = arguments[ i ]) != null ) {
+					// Extend the base object
+					for ( name in options ) {
+						src = target[ name ];
+						copy = options[ name ];
+
+						// Prevent never-ending loop
+						if ( target === copy ) {
+							continue;
+						}
+
+						if ( copy !== undefined ) {
+							target[ name ] = copy;
+						}
+					}
+				}
+			}
+
+			// Return the modified object
+			return target;				
+		},
 		startBibly = function() {
 			
 			if (isStarted)
@@ -1084,8 +1124,10 @@ bible.Reference = function () {
 	// super cheater version of DOMoade
 	// do whatever happens first
 	addEvent(doc,'DOMContentLoaded',startBibly);
-	addEvent(win,'load',startBibly);
+	addEvent(win,'load',startBibly);	
 	
+	if (typeof window.bibly != 'undefined') 
+		bibly = extend(bibly, window.bibly);
 	
 	// export
 	bibly.startBibly = startBibly;
