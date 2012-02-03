@@ -22,7 +22,9 @@ var bible = {};
 					// 1 John
 					result.push(ords[j] + ' ' + parts[i]);
 					// 1John
-					result.push(ords[j] + parts[i]);
+					if (j === 0) {
+						result.push(ords[j] + parts[i]);
+					}
 				}			
 			}				
 			

@@ -1,6 +1,7 @@
 0.8.6
 - added bibly.ignoreClassName = 'bibly_ignore'
 - added bibly.ignoreTags = ['h1','h2','h3']
+- fixed regex ignore code
 
 0.7.1 
 - fix Biblia API key
