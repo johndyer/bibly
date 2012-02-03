@@ -4,7 +4,7 @@
 (function() {
 	// book names list	
 	var bibly = {
-			version: '0.8.5',
+			version: '0.8.6',
 			maxNodes: 500,
 			className: 'bibly_reference',
 			enablePopups: true,
@@ -485,6 +485,41 @@
 			}			
 		},		
 		isStarted = false,
+		extend = function() {
+			// borrowed from ender
+			var options, name, src, copy, 
+				target = arguments[0] || {},
+				i = 1,
+				length = arguments.length;	
+
+			// Handle case when target is a string or something (possible in deep copy)
+			if ( typeof target !== "object" && typeof target !== "function" ) {
+				target = {};
+			}
+
+			for ( ; i < length; i++ ) {
+				// Only deal with non-null/undefined values
+				if ( (options = arguments[ i ]) != null ) {
+					// Extend the base object
+					for ( name in options ) {
+						src = target[ name ];
+						copy = options[ name ];
+
+						// Prevent never-ending loop
+						if ( target === copy ) {
+							continue;
+						}
+
+						if ( copy !== undefined ) {
+							target[ name ] = copy;
+						}
+					}
+				}
+			}
+
+			// Return the modified object
+			return target;				
+		},
 		startBibly = function() {
 			
 			if (isStarted)
@@ -536,8 +571,10 @@
 	// super cheater version of DOMoade
 	// do whatever happens first
 	addEvent(doc,'DOMContentLoaded',startBibly);
-	addEvent(win,'load',startBibly);
+	addEvent(win,'load',startBibly);	
 	
+	if (typeof window.bibly != 'undefined') 
+		bibly = extend(bibly, window.bibly);
 	
 	// export
 	bibly.startBibly = startBibly;
