@@ -13,7 +13,9 @@
 			bibliaApiKey: '436e02d01081d28a78a45d65f66f4416', 
 			autoStart: true,
 			startNodeId: '',
-			maxVerses: 4
+			maxVerses: 4,
+			ignoreClassName: 'bibly_ignore',
+			ignoreTags: ['h1','h2','h3','h4']
 		},	
 		win = window,
 		doc = document,
@@ -26,7 +28,7 @@
 		regexPattern = '\\b('+bok+')\.?\\s+('+ver+'((\\s?,\\s?'+ver+')|(\\s?;\\s?'+ver2+'))*)\\b',
 		referenceRegex = new RegExp(regexPattern, 'mi'),
 		verseRegex = new RegExp(ver, 'mi'),
-		skipRegex = /^(a|script|style|textarea)$/i,
+		alwaysSkipTags = ['a','script','style','textarea'],
 		lastReference = null,
 		textHandler = function(node) {
 			var match = referenceRegex.exec(node.data), 
@@ -429,7 +431,10 @@
 			traverseDOM(node.childNodes[0], 1, textHandler);		
 		},
 		traverseDOM = function(node, depth, textHandler) {
-			var count = 0;
+			var count = 0,
+				//skipRegex = /^(a|script|style|textarea)$/i,
+				skipRegex = new RegExp('^(' + alwaysSkipTags.concat(bibly.ignoreTags).join('|') + ')$', 'i');
+				
 				
 			while (node && depth > 0) {
 				count++;
@@ -440,7 +445,7 @@
 
 				switch (node.nodeType) {
 					case 1: // ELEMENT_NODE
-						if (!skipRegex.test(node.tagName) && node.childNodes.length > 0) {
+						if (!skipRegex.test(node.tagName.toLowerCase()) && node.childNodes.length > 0 && (bibly.ignoreClassName == '' || node.className.toString().indexOf(bibly.ignoreClassName) == -1)) {											
 							node = node.childNodes[0];
 							depth ++;
 							continue;
