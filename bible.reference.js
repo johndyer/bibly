@@ -1,4 +1,4 @@
-﻿﻿bible.parseReference = function (textReference) {
+﻿bible.parseReference = function (textReference) {
 
 	var 
 		bookIndex = -1,
@@ -35,10 +35,8 @@
 		possibleMatch = possibleMatch.replace(/\s+$/,'').replace(/\.+$/,'').toLowerCase();
 
 		// go through all books and test all names
-		//for (i = bible.Books.length - 1; i >= 0; i--) {
-		for (i = 0, il = bible.Books.length; i < il ; i++) {
+		for (i = 0, il = bible.Books.length ; i < il && bookIndex == -1; i++) {
 			// test each name starting with the full name, then short code, then abbreviation, then alternates
-			//for (j = 0; j < bible.Books[i].names.length; j++) {
 			for (j = 0, jl = bible.Books[i].names.length; j<jl; j++) {
 				name = new String(bible.Books[i].names[j]).toLowerCase();
 
@@ -79,15 +77,15 @@
 
 					if (afterSeparator) {
 						if (afterRange) {
-							verse2 = parseInt(currentNumber);
+							verse2 = parseInt(currentNumber, 10);
 						} else { // 1:1
-							verse1 = parseInt(currentNumber);
+							verse1 = parseInt(currentNumber, 10);
 						}
 					} else {
 						if (afterRange) {
-							chapter2 = parseInt(currentNumber);
+							chapter2 = parseInt(currentNumber, 10);
 						} else { // 1
-							chapter1 = parseInt(currentNumber);
+							chapter1 = parseInt(currentNumber, 10);
 						}
 					}
 				}
