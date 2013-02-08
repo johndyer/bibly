@@ -59,7 +59,7 @@ bible.Books = [
 	,verses:[46,37,29,49,33,25,26,20,29,22,32,32,18,29,23,22,20,22,21,20,23,30,25,22,19,19,26,68,29,20,30,52,29,12]
 },
 {
-	names:split('Joshua Js Jos Jos Josh')
+	names:split('Joshua Js Jos Josh')
 	,verses:[18,24,17,24,15,27,26,35,27,43,23,24,33,15,63,10,18,28,51,9,45,34,16,33]
 },
 {
@@ -99,7 +99,7 @@ bible.Books = [
 	,verses:[11,70,13,24,17,22,28,36,15,44]
 },
 {
-	names:split('Nehemiah Ne Neh Neh Ne')
+	names:split('Nehemiah Ne Neh Ne')
 	,verses:[11,20,32,23,19,19,73,18,38,39,36,47,31]
 },
 {
@@ -107,7 +107,7 @@ bible.Books = [
 	,verses:[22,23,15,17,14,14,10,17,32,3]
 },
 {
-	names:split('Job Jb Job')
+	names:split('Job Jb')
 	,verses:[22,13,26,21,27,30,21,22,35,22,20,25,28,22,35,22,16,21,29,29,34,30,17,25,6,14,23,28,25,31,40,22,33,37,16,33,24,41,30,24,34,17]
 },
 {
@@ -155,7 +155,7 @@ bible.Books = [
 	,verses:[20,32,21]
 },
 {
-	names:split('Amos Am Amos Amo')
+	names:split('Amos Am Amo')
 	,verses:[15,16,15,13,27,14,17,14,15]
 },
 {
@@ -171,7 +171,7 @@ bible.Books = [
 	,verses:[16,13,12,13,15,16,20]
 },
 {
-	names:split('Nahum Na Nah Na')
+	names:split('Nahum Na Nah')
 	,verses:[15,13,19]
 },
 {
@@ -183,7 +183,7 @@ bible.Books = [
 	,verses:[18,15,20]
 },
 {
-	names:split('Haggia Ha Hag Hagg')
+	names:split('Haggai Ha Hag Hagg')
 	,verses:[15,23]
 },
 {
@@ -235,7 +235,7 @@ bible.Books = [
 	,verses:[23,22,21,32,33,24]
 },
 {
-	names:split('Philippians Phi Phil Phi')
+	names:split('Philippians Phi Phil')
 	,verses:[30,30,21,23]
 },
 {
@@ -295,7 +295,7 @@ bible.Books = [
 	,verses:[14]
 },
 {
-	names:split('Jude Jude')
+	names:split('Jude')
 	,verses:[25]
 },
 {
