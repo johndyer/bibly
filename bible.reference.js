@@ -6,6 +6,7 @@
 		verse1 = -1,
 		chapter2 = -1,
 		verse2 = -1,
+		textReference = bible.replaceRoman(textReference),
 		input = new String(textReference).replace('&ndash;','-').replace('–','-').replace(/(\d+[\.:])\s+(\d+)/gi, '$1$2'),
 		i, j, il, jl,
 		afterRange = false,
@@ -15,8 +16,6 @@
 		name,
 		possibleMatch = null,
 		c;
-	
-		
 	// take the entire reference (John 1:1 or 1 Cor) and move backwards until we find a letter or space
 	// 'John 1:1' => 'John '
 	// '1 Cor' => '1 Cor'
@@ -24,7 +23,7 @@
 	for (i=input.length; i>=0; i--) {
 		if (/[A-Za-z\s]/.test(input.substring(i-1,i))) {
 			possibleMatch = input.substring(0,i);					
-			break;			
+			break;
 		}
 	}
 	
@@ -139,10 +138,55 @@
 			}
 		}
 	}
-		
 	// finalize
 	return bible.Reference(bookIndex, chapter1, verse1, chapter2, verse2);
 
+}
+
+bible.replaceRoman = function(str) {
+	// get roman numerals from string
+	var matches = str.match(/((CM|CD)|(D)?(C){0,3})((XC|XL)|(L)?(X){0,3})((IX|IV)|(V)?(I){0,3})(?=(\s|[\.,;:-])|$)/gi);
+
+	// remove "", null, undefined, and 0
+	matches = matches.filter(function(e){return e});
+
+	// replace the roman numerals with arabic numerals
+	for (var i = matches.length - 1; i >= 0; i--) {
+		var arabicNumeral = bible.romanToArabic(matches[i]);
+		var romanNumeral = new RegExp('\\b' + matches[i] + '(?=(\\s|[\.,;:-])|$)', 'gi');
+		var str = str.replace(romanNumeral, arabicNumeral);
+	}
+
+	return str;
+}
+
+bible.romanToArabic = function(romanNumeral){
+	var romanNumerals = [
+		[100, 'C'],
+		[90, 'XC'],
+		[50, 'L'],
+		[40, 'XL'],
+		[10, 'X'],
+		[9, 'IX'],
+		[5, 'V'],
+		[4, 'IV'],
+		[1, 'I']
+	];
+
+	// Test if string is a valid roman numeral
+	var rom = '^((CM|CD)|(D)?(C){0,3})((XC|XL)|(L)?(X){0,3})((IX|IV)|(V)?(I){0,3})$';
+	var romanRegExp = new RegExp(rom ,'mi');
+	if(romanRegExp.test(romanNumeral)) {
+		var n = 0;
+		for (var i = 0; i < romanNumerals.length; ++i){
+			for (var x = romanNumerals[i], l = x[1].length; romanNumeral.substr(0,l).toUpperCase() == x[1]; romanNumeral = romanNumeral.substr(l).toUpperCase()) 
+	            n += x[0];
+		}
+		return n;
+	}
+	else {
+		return romanNumeral;
+	}
 }
 
 bible.Reference = function () {
