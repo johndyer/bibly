@@ -1,4 +1,4 @@
-﻿bible.parseReference = function (textReference) {
+bible.parseReference = function (textReference) {
 
 	var 
 		bookIndex = -1,
@@ -6,8 +6,8 @@
 		verse1 = -1,
 		chapter2 = -1,
 		verse2 = -1,
-		textReference = bible.replaceRoman(textReference),
-		input = new String(textReference).replace('&ndash;','-').replace('–','-').replace(/(\d+[\.:])\s+(\d+)/gi, '$1$2'),
+		textRef = bible.replaceRoman(textReference),
+		input = textRef.replace('&ndash;','-').replace('–','-').replace(/(\d+[\.:])\s+(\d+)/gi, '$1$2'),
 		i, j, il, jl,
 		afterRange = false,
 		afterSeparator = false,
@@ -27,7 +27,7 @@
 		}
 	}
 	
-	if (possibleMatch != null) {
+	if (possibleMatch !== null) {
 		
 		// tear off any remaining spaces
 		// 'John ' => 'John'
@@ -37,7 +37,7 @@
 		for (i = 0, il = bible.Books.length ; i < il && bookIndex == -1; i++) {
 			// test each name starting with the full name, then short code, then abbreviation, then alternates
 			for (j = 0, jl = bible.Books[i].names.length; j<jl; j++) {
-				name = new String(bible.Books[i].names[j]).toLowerCase();
+				name = bible.Books[i].names[j].toLowerCase();
 
 				if (possibleMatch == name) {
 					bookIndex = i;
@@ -140,25 +140,26 @@
 	}
 	// finalize
 	return bible.Reference(bookIndex, chapter1, verse1, chapter2, verse2);
-
-}
+};
 
 bible.replaceRoman = function(str) {
 	// get roman numerals from string
 	var matches = str.match(/((CM|CD)|(D)?(C){0,3})((XC|XL)|(L)?(X){0,3})((IX|IV)|(V)?(I){0,3})(?=(\s|[\.,;:-])|$)/gi);
 
 	// remove "", null, undefined, and 0
-	matches = matches.filter(function(e){return e});
-
+	matches = matches.filter(function(e){
+        return e;
+    });
+        
 	// replace the roman numerals with arabic numerals
 	for (var i = matches.length - 1; i >= 0; i--) {
 		var arabicNumeral = bible.romanToArabic(matches[i]);
-		var romanNumeral = new RegExp('\\b' + matches[i] + '(?=(\\s|[\.,;:-])|$)', 'gi');
-		var str = str.replace(romanNumeral, arabicNumeral);
+		var romanNumeral = new RegExp('\\b' + matches[i] + '(?=(\\s|[.,;:-])|$)', 'gi');
+		str = str.replace(romanNumeral, arabicNumeral);
 	}
 
 	return str;
-}
+};
 
 bible.romanToArabic = function(romanNumeral){
 	var romanNumerals = [
@@ -180,14 +181,14 @@ bible.romanToArabic = function(romanNumeral){
 		var n = 0;
 		for (var i = 0; i < romanNumerals.length; ++i){
 			for (var x = romanNumerals[i], l = x[1].length; romanNumeral.substr(0,l).toUpperCase() == x[1]; romanNumeral = romanNumeral.substr(l).toUpperCase()) 
-	            n += x[0];
+                n += x[0];
 		}
 		return n;
 	}
 	else {
 		return romanNumeral;
 	}
-}
+};
 
 bible.Reference = function () {
 
@@ -199,7 +200,7 @@ bible.Reference = function () {
 		_verse2 = -1,
 		args = arguments;
 
-	if (args.length == 0) {
+	if (args.length === 0) {
 		// error		
 	} else if (args.length == 1 && typeof args[0] == 'string') { // a string that needs to be parsed
 		return bible.parseReference(args[0]);
@@ -260,5 +261,5 @@ bible.Reference = function () {
 			if (this.bookIndex < 0 || this.bookIndex >= bible.Books.length) return "invalid";
 			return 'http://bib.ly/' + bible.Books[this.bookIndex].names[1] + this.chapterAndVerse('.','-','-');
 		}
-	}
+	};
 };
