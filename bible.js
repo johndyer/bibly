@@ -34,7 +34,7 @@ var bible = {};
 			result.unshift(ords[0] + ' ' + parts[0]);
 			
 			return result;
-		}
+		};
 	
 
 bible.Books = [
@@ -313,4 +313,4 @@ bible.genNames= function() {
 	}
 	
 	return names.join('|');
-}
+};
