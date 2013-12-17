@@ -131,7 +131,7 @@ bible.parseReference = function (textReference) {
 				if (verse1 > bible.Books[bookIndex].verses[chapter1 - 1]) {
 					verse1 = bible.Books[bookIndex].verses[chapter1 - 1];
 				}
-				if (verse2 <= verse1) {
+				if (chapter1 === chapter2 && verse2 <= verse1) {
 					chapter2 = -1;
 					verse2 = -1;
 				}
