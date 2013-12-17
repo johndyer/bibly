@@ -183,7 +183,7 @@ bible.Books = [
 	,verses:[18,15,20]
 },
 {
-	names:split('Haggia Ha Hag Hagg')
+	names:split('Haggai Ha Hag Hagg')
 	,verses:[15,23]
 },
 {
