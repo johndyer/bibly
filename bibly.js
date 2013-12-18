@@ -23,8 +23,9 @@
 		defaultPopupVersion = 'ESV',
 		allowedPopupVersions = ['NET','ESV','KJV','LEB','DARBY'],
 		bok = bible.genNames(),
-		ver =  '(1?\\d{1,2})([\.:]\\s?(\\d+))?(\\s?[-–&]\\s?(\\d+))?',  // 1 OR 1:1 OR 1:1-2, 100, but not 1000
-		ver2 =  '(1?\\d{1,2})[\.:]\\s?(\\d+)(\\s?[-–&]\\s?(\\d+))?',  // NOT 1 OR 1:1 OR 1:1-2 (this is needed so verses after semi-colons require a :. Problem John 3:16; 2 Cor 3:3 <-- the 2 will be a verse)
+		rom = '((CM|CD)|(D)?(C){0,3})((XC|XL)|(L)?(X){0,3})((IX|IV)|(V)?(I){0,3})',
+		ver =  '((1?\\d{1,2})|'+rom+'(?=(\\s|[\\.,;:-])|$))([\.:]\\s?(\\d+))?(\\s?[-–&]\\s?(\\d+|'+rom+'))?',  // 1 OR 1:1 OR 1:1-2, 100, but not 1000
+		ver2 =  '((1?\\d{1,2})|'+rom+'(?=(\\s|[\\.,;:-])|$))[\.:]\\s?(\\d+)(\\s?[-–&]\\s?(\\d+|'+rom+'))?',  // NOT 1 OR 1:1 OR 1:1-2 (this is needed so verses after semi-colons require a :. Problem John 3:16; 2 Cor 3:3 <-- the 2 will be a verse)		regexPattern = '\\b('+bok+')\.?\\s+('+ver+'((\\s?,\\s?'+ver+')|(\\s?;\\s?'+ver2+'))*)\\b',
 		regexPattern = '\\b('+bok+')\.?\\s+('+ver+'((\\s?,\\s?'+ver+')|(\\s?;\\s?'+ver2+'))*)\\b',
 		referenceRegex = new RegExp(regexPattern, 'mi'),
 		verseRegex = new RegExp(ver, 'mi'),
@@ -49,7 +50,6 @@
 				
 				// send the matched text down the 
 				newLink = createLinksFromNode(node, referenceNode);
-				
 				return newLink;
 			} else {
 				return node;
@@ -130,10 +130,10 @@
 				match = verseRegex.exec(refText);				
 				if (match) {				
 					
-					p1 = parseInt(match[1],10);
-					p3 = parseInt(match[3],10);
-					p5 = parseInt(match[5],10);
-					
+					p1 = parseInt(bible.romanToArabic(match[1]),10);
+					p3 = parseInt(match[17],10);
+					p5 = parseInt(match[19],10);
+				
 					if (isNaN(p3)) {
 						p3 = 0;
 					}
@@ -144,32 +144,32 @@
 					// single verse (1)
 					if (p3 == 0 && p5 == 0) {
 											
-						lastReference.verse1 = parseInt(match[1],10);
+						lastReference.verse1 = p1;//parseInt(match[1],10);
 						lastReference.chapter2 = -1;
 						lastReference.verse2 = -1;
 					
 					// 1:2
 					} else if ( p3 != 0 && p5 == 0) {
 						
-						lastReference.chapter1 = parseInt(match[1],10);
-						lastReference.verse1 = parseInt(match[3],10);
+						lastReference.chapter1 = p1;//parseInt(match[1],10);
+						lastReference.verse1 = parseInt(match[17],10);
 						lastReference.chapter2 = -1;
 						lastReference.verse2 = -1;		
 					
 					// 1:2-3
 					} else if (p3 != 0 && p5 != 0) {
 						
-						lastReference.chapter1 = parseInt(match[1],10);
-						lastReference.verse1 = parseInt(match[3],10);
+						lastReference.chapter1 = p1;//parseInt(match[1],10);
+						lastReference.verse1 = parseInt(match[17],10);
 						lastReference.chapter2 = -1;
-						lastReference.verse2 = parseInt(match[5],10);;		
+						lastReference.verse2 = parseInt(match[19],10);;		
 					
 					// 1-2
 					} else if (p3 == 0 && p5 != 0) {
 						
-						lastReference.verse1 = parseInt(match[1],10);
+						lastReference.verse1 = p1;//parseInt(match[1],10);
 						lastReference.chapter2 = -1;
-						lastReference.verse2 = parseInt(match[5],10);;		
+						lastReference.verse2 = parseInt(match[19],10);;		
 					}
 					
 					return lastReference;
