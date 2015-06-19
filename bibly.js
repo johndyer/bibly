@@ -196,7 +196,7 @@
 		
 			win[jsonpName] = function(d) {
 				callback(d);
-			}
+			};
 			jsonpCache[url] = jsonpName;
 		
 			url += (url.indexOf("?") > -1 ? '&' : '?') + 'callback=' + jsonpName;			  
@@ -298,7 +298,8 @@
 			var target = (e.target) ? e.target : e.srcElement,
 				p = bibly.popup,
 				pos = getPosition(target),
-				x = y = 0,
+				x = 0,
+				y = 0,
 				v = getPopupVersion();
 				referenceText = target.getAttribute('rel'),
 				viewport = getWindowSize(),
@@ -376,7 +377,10 @@
 		},
 		
 		getPosition = function(node) {		
-			var curleft = curtop = curtopscroll = curleftscroll = 0;
+			var curleft = 0;
+			var curtop = 0;
+			var curtopscroll = 0;
+			var curleftscroll = 0;
 			if (node.offsetParent) {
 				do {
 					curleft += node.offsetLeft;
@@ -435,11 +439,14 @@
 				//skipRegex = /^(a|script|style|textarea)$/i,
 				skipRegex = new RegExp('^(' + alwaysSkipTags.concat(bibly.ignoreTags).join('|') + ')$', 'i');
 				
+			function restartTraversing() {
+				traverseDOM(node, depth, textHandler);
+			}
 				
 			while (node && depth > 0) {
 				count++;
 				if (count >= bibly.maxNodes) {
-					setTimeout(function() { traverseDOM(node, depth, textHandler); }, 50);
+					setTimeout(restartTraversing, 50);
 					return;
 				}
 
