@@ -575,7 +575,7 @@
 			}
 		};
 
-	// super cheater version of DOMoade
+	// super cheater version of DOMloaded
 	// do whatever happens first
 	addEvent(doc,'DOMContentLoaded',startBibly);
 	addEvent(win,'load',startBibly);
