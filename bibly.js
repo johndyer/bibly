@@ -23,8 +23,8 @@
 		defaultPopupVersion = 'ESV',
 		allowedPopupVersions = ['NET','ESV','KJV','LEB','DARBY'],
 		bok = bible.genNames(),
-		ver =  '(1?\\d{1,2})([\.:]\\s?(\\d+))?(\\s?[-–&]\\s?(\\d+))?',  // 1 OR 1:1 OR 1:1-2, 100, but not 1000
-		ver2 =  '(1?\\d{1,2})[\.:]\\s?(\\d+)(\\s?[-–&]\\s?(\\d+))?',  // NOT 1 OR 1:1 OR 1:1-2 (this is needed so verses after semi-colons require a :. Problem John 3:16; 2 Cor 3:3 <-- the 2 will be a verse)
+		ver = '(1?\\d{1,2})([\.:]\\s?(\\d+))?(\\s?[-–&]\\s?(\\d+))?',  // 1 OR 1:1 OR 1:1-2, 100, but not 1000
+		ver2 = '(1?\\d{1,2})[\.:]\\s?(\\d+)(\\s?[-–&]\\s?(\\d+))?',  // NOT 1 OR 1:1 OR 1:1-2 (this is needed so verses after semi-colons require a :. Problem John 3:16; 2 Cor 3:3 <-- the 2 will be a verse)
 		regexPattern = '\\b('+bok+')\.?\\s+('+ver+'((\\s?,\\s?'+ver+')|(\\s?;\\s?'+ver2+'))*)\\b',
 		referenceRegex = new RegExp(regexPattern, 'mi'),
 		verseRegex = new RegExp(ver, 'mi'),
@@ -300,7 +300,7 @@
 				pos = getPosition(target),
 				x = 0,
 				y = 0,
-				v = getPopupVersion();
+				v = getPopupVersion(),
 				referenceText = target.getAttribute('rel'),
 				viewport = getWindowSize(),
 				scrollPos = getScroll();
@@ -369,7 +369,7 @@
 		},
 		clearPositionTimer = function() {
 			clearTimeout(checkPosTimeout);
-			delete checkPosTimeout;
+			checkPosTimeout = null;
 		},
 		hidePopup = function() {
 			var p = bibly.popup;
@@ -387,7 +387,7 @@
 					curtop += node.offsetTop;
 					curleftscroll += node.offsetParent ? node.offsetParent.scrollLeft : 0;
 					curtopscroll += node.offsetParent ? node.offsetParent.scrollTop : 0;
-				} while (node = node.offsetParent);
+				} while ( (node = node.offsetParent) );
 			}
 
 			return {left:curleft,top:curtop,leftScroll:curleftscroll,topScroll:curtopscroll};
