@@ -75,7 +75,7 @@
 				separator = referenceNode.splitText(separatorIndex);
 
 				startRemainder = 1;
-				while(startRemainder < separator.nodeValue.length && separator.nodeValue.substring(startRemainder,startRemainder+1) == ' ')
+				while(startRemainder < separator.nodeValue.length && separator.nodeValue.substring(startRemainder,startRemainder+1) === ' ')
 					startRemainder++;
 
 				remainder = separator.splitText(startRemainder);
@@ -89,7 +89,7 @@
 				// replace the referenceNode TEXT with an anchor node to bib.ly
 				newLink = node.ownerDocument.createElement('A');
 				node.parentNode.replaceChild(newLink, referenceNode);
-				newLink.setAttribute('href', reference.toShortUrl() + (bibly.linkVersion != '' ? '.' + bibly.linkVersion : ''));
+				newLink.setAttribute('href', reference.toShortUrl() + (bibly.linkVersion !== '' ? '.' + bibly.linkVersion : ''));
 				newLink.setAttribute('title', 'Read ' + reference.toString());
 				newLink.setAttribute('rel', reference.toString());
 				newLink.setAttribute('class', bibly.className);
@@ -119,12 +119,12 @@
 				match = null,
 				p1, p3, p5;
 
-			if (reference != null && typeof reference.isValid != 'undefined' && reference.isValid()) {
+			if (reference != null && typeof reference.isValid !== 'undefined' && reference.isValid()) {
 
 				lastReference = reference;
 				return reference;
 
-			} else if (lastReference  != null) {
+			} else if (lastReference != null) {
 
 				// single verse match (3)
 				match = verseRegex.exec(refText);
@@ -142,14 +142,14 @@
 					}
 
 					// single verse (1)
-					if (p3 == 0 && p5 == 0) {
+					if (p3 === 0 && p5 === 0) {
 
 						lastReference.verse1 = parseInt(match[1],10);
 						lastReference.chapter2 = -1;
 						lastReference.verse2 = -1;
 
 					// 1:2
-					} else if ( p3 != 0 && p5 == 0) {
+					} else if ( p3 !== 0 && p5 === 0) {
 
 						lastReference.chapter1 = parseInt(match[1],10);
 						lastReference.verse1 = parseInt(match[3],10);
@@ -157,19 +157,19 @@
 						lastReference.verse2 = -1;
 
 					// 1:2-3
-					} else if (p3 != 0 && p5 != 0) {
+					} else if (p3 !== 0 && p5 !== 0) {
 
 						lastReference.chapter1 = parseInt(match[1],10);
 						lastReference.verse1 = parseInt(match[3],10);
 						lastReference.chapter2 = -1;
-						lastReference.verse2 = parseInt(match[5],10);;
+						lastReference.verse2 = parseInt(match[5],10);
 
 					// 1-2
-					} else if (p3 == 0 && p5 != 0) {
+					} else if (p3 === 0 && p5 !== 0) {
 
 						lastReference.verse1 = parseInt(match[1],10);
 						lastReference.chapter2 = -1;
-						lastReference.verse2 = parseInt(match[5],10);;
+						lastReference.verse2 = parseInt(match[5],10);
 					}
 
 					return lastReference;
@@ -452,7 +452,7 @@
 
 				switch (node.nodeType) {
 					case 1: // ELEMENT_NODE
-						if (!skipRegex.test(node.tagName.toLowerCase()) && node.childNodes.length > 0 && (bibly.ignoreClassName == '' || node.className.toString().indexOf(bibly.ignoreClassName) == -1)) {
+						if (!skipRegex.test(node.tagName.toLowerCase()) && node.childNodes.length > 0 && (bibly.ignoreClassName === '' || node.className.toString().indexOf(bibly.ignoreClassName) == -1)) {
 							node = node.childNodes[0];
 							depth ++;
 							continue;
@@ -563,7 +563,7 @@
 			addEvent(p.outer,'mouseout',handlePopupMouseOut);
 
 			if (bibly.autoStart) {
-				if (bibly.startNodeId != '') {
+				if (bibly.startNodeId !== '') {
 					node = doc.getElementById(bibly.startNodeId);
 				}
 
