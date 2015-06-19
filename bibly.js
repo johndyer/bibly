@@ -2,7 +2,7 @@
 // adapted from old scripturizer.js code
 
 (function() {
-	// book names list	
+	// book names list
 	var bibly = {
 			version: '0.8.6',
 			maxNodes: 500,
@@ -10,16 +10,16 @@
 			enablePopups: true,
 			popupVersion: 'ESV',
 			linkVersion: '',
-			bibliaApiKey: '436e02d01081d28a78a45d65f66f4416', 
+			bibliaApiKey: '436e02d01081d28a78a45d65f66f4416',
 			autoStart: true,
 			startNodeId: '',
 			maxVerses: 4,
 			ignoreClassName: 'bibly_ignore',
 			ignoreTags: ['h1','h2','h3','h4']
-		},	
+		},
 		win = window,
 		doc = document,
-		body = null,		
+		body = null,
 		defaultPopupVersion = 'ESV',
 		allowedPopupVersions = ['NET','ESV','KJV','LEB','DARBY'],
 		bok = bible.genNames(),
@@ -31,25 +31,25 @@
 		alwaysSkipTags = ['a','script','style','textarea'],
 		lastReference = null,
 		textHandler = function(node) {
-			var match = referenceRegex.exec(node.data), 
-				val, 
-				referenceNode, 
+			var match = referenceRegex.exec(node.data),
+				val,
+				referenceNode,
 				afterReferenceNode,
 				newLink;
-			
+
 			// reset this
 			lastReference = null;
-			
+
 			if (match) {
 				val = match[0];
 				// see https://developer.mozilla.org/en/DOM/text.splitText
 				// split into three parts [node=before][referenceNode][afterReferenceNode]
 				referenceNode = node.splitText(match.index);
 				afterReferenceNode = referenceNode.splitText(val.length);
-				
-				// send the matched text down the 
+
+				// send the matched text down the
 				newLink = createLinksFromNode(node, referenceNode);
-				
+
 				return newLink;
 			} else {
 				return node;
@@ -58,9 +58,9 @@
 		createLinksFromNode = function(node, referenceNode) {
 			if (referenceNode.nodeValue == null)
 				return referenceNode;
-		
+
 			// split up match by ; and , characters and make a unique link for each
-			var 
+			var
 				newLink,
 				commaIndex = referenceNode.nodeValue.indexOf(','),
 				semiColonIndex = referenceNode.nodeValue.indexOf(';'),
@@ -69,42 +69,42 @@
 				remainder,
 				reference,
 				startRemainder;
-			
+
 			// if there is a separator ,; then split up into three parts [node][separator][after]
 			if (separatorIndex > 0) {
 				separator = referenceNode.splitText(separatorIndex);
-				
+
 				startRemainder = 1;
 				while(startRemainder < separator.nodeValue.length && separator.nodeValue.substring(startRemainder,startRemainder+1) == ' ')
 					startRemainder++;
-				
+
 				remainder = separator.splitText(startRemainder);
-			}	
-			
+			}
+
 			// test if the text matches a real reference
-			refText = referenceNode.nodeValue;	
+			refText = referenceNode.nodeValue;
 			reference = parseRefText(refText);
 			if (typeof reference != 'undefined' && reference.isValid()) {
-				
+
 				// replace the referenceNode TEXT with an anchor node to bib.ly
-				newLink = node.ownerDocument.createElement('A');				
-				node.parentNode.replaceChild(newLink, referenceNode);	
+				newLink = node.ownerDocument.createElement('A');
+				node.parentNode.replaceChild(newLink, referenceNode);
 				newLink.setAttribute('href', reference.toShortUrl() + (bibly.linkVersion != '' ? '.' + bibly.linkVersion : ''));
 				newLink.setAttribute('title', 'Read ' + reference.toString());
 				newLink.setAttribute('rel', reference.toString());
 				newLink.setAttribute('class', bibly.className);
 				newLink.appendChild(referenceNode);
-				
+
 				if (bibly.enablePopups) {
 					addEvent(newLink,'mouseover', handleLinkMouseOver);
 					addEvent(newLink,'mouseout', handleLinkMouseOut);
 				}
-				
+
 				// if there was a separator, now parse the stuff after it
-				if (remainder) {				
-					newLink = createLinksFromNode(node, remainder);				
-				}	
-				
+				if (remainder) {
+					newLink = createLinksFromNode(node, remainder);
+				}
+
 				return newLink;
 			} else {
 				// for false matches, return it unchanged
@@ -112,69 +112,69 @@
 			}
 		},
 		parseRefText = function(refText) {
-			
-			var 
+
+			var
 				text = refText,
 				reference = new bible.Reference(text),
 				match = null,
 				p1, p3, p5;
-			
+
 			if (reference != null && typeof reference.isValid != 'undefined' && reference.isValid()) {
-				
+
 				lastReference = reference;
 				return reference;
-				
+
 			} else if (lastReference  != null) {
-				
+
 				// single verse match (3)
-				match = verseRegex.exec(refText);				
-				if (match) {				
-					
+				match = verseRegex.exec(refText);
+				if (match) {
+
 					p1 = parseInt(match[1],10);
 					p3 = parseInt(match[3],10);
 					p5 = parseInt(match[5],10);
-					
+
 					if (isNaN(p3)) {
 						p3 = 0;
 					}
 					if (isNaN(p5)) {
 						p5 = 0;
 					}
-					
+
 					// single verse (1)
 					if (p3 == 0 && p5 == 0) {
-											
+
 						lastReference.verse1 = parseInt(match[1],10);
 						lastReference.chapter2 = -1;
 						lastReference.verse2 = -1;
-					
+
 					// 1:2
 					} else if ( p3 != 0 && p5 == 0) {
-						
+
 						lastReference.chapter1 = parseInt(match[1],10);
 						lastReference.verse1 = parseInt(match[3],10);
 						lastReference.chapter2 = -1;
-						lastReference.verse2 = -1;		
-					
+						lastReference.verse2 = -1;
+
 					// 1:2-3
 					} else if (p3 != 0 && p5 != 0) {
-						
+
 						lastReference.chapter1 = parseInt(match[1],10);
 						lastReference.verse1 = parseInt(match[3],10);
 						lastReference.chapter2 = -1;
-						lastReference.verse2 = parseInt(match[5],10);;		
-					
+						lastReference.verse2 = parseInt(match[5],10);;
+
 					// 1-2
 					} else if (p3 == 0 && p5 != 0) {
-						
+
 						lastReference.verse1 = parseInt(match[1],10);
 						lastReference.chapter2 = -1;
-						lastReference.verse2 = parseInt(match[5],10);;		
+						lastReference.verse2 = parseInt(match[5],10);;
 					}
-					
+
 					return lastReference;
 				}
-			
+
 				// failure
 				return {
 					refText: refText,
@@ -184,28 +184,28 @@
 					toString: function() {
 						return refText  + " = Can't parse it";
 					}
-				};				
+				};
 			}
 		},
 		callbackIndex=100000,
 		jsonpCache = {},
-		jsonp = function(url, callback){  
-		
+		jsonp = function(url, callback){
+
 			var jsonpName = 'callback' + (callbackIndex++),
-				script = doc.createElement("script"); 
-		
+				script = doc.createElement("script");
+
 			win[jsonpName] = function(d) {
 				callback(d);
 			};
 			jsonpCache[url] = jsonpName;
-		
-			url += (url.indexOf("?") > -1 ? '&' : '?') + 'callback=' + jsonpName;			  
-			//url += '&' + new Date().getTime().toString(); // prevent caching        
-						
+
+			url += (url.indexOf("?") > -1 ? '&' : '?') + 'callback=' + jsonpName;
+			//url += '&' + new Date().getTime().toString(); // prevent caching
+
 			script.setAttribute("src",url);
-			script.setAttribute("type","text/javascript");                
+			script.setAttribute("type","text/javascript");
 			body.appendChild(script);
-			
+
 		},
 		getFooter= function(version) {
 			switch (version) {
@@ -213,17 +213,17 @@
 					return '<a href="http://bible.org/">NET Bible® copyright ©1996-2006 by Biblical Studies Press, LLC</a>';
 				case 'ESV':
 					return 'English Standard Version. Copyright &copy;2001 by <a href="http://www.crosswaybibles.org">Crossway Bibles</a>';
-				case 'LEB':					
+				case 'LEB':
 				case 'KJV':
-					return version + ' powered by <a href="http://biblia.com/">Biblia</a> web services from <a href="http://www.logos.com/">Logos Bible Software</a>';					
+					return version + ' powered by <a href="http://biblia.com/">Biblia</a> web services from <a href="http://www.logos.com/">Logos Bible Software</a>';
 			}
 		},
 		getPopupVersion = function() {
-			var v = bibly.popupVersion.toUpperCase(), 
-				indexOf=-1, 
-				i=0, 
+			var v = bibly.popupVersion.toUpperCase(),
+				indexOf=-1,
+				i=0,
 				il=allowedPopupVersions.length;
-			
+
 			// old IEs don't have Array.indexOf
 			for (; i < il; i++) {
 			  if (allowedPopupVersions[i].toUpperCase() === v) {
@@ -238,7 +238,7 @@
 			var v = getPopupVersion(),
 				max = bibly.maxVerses,
 				reference = new bible.Reference(refString);
-				
+
 			// check that it's only 4 verses
 			if (reference.verse1 > 0 && reference.verse2 > 0 && reference.verse2 - reference.verse1 > (max-1)) {
 				reference.verse2 = reference.verse1 + (max-1);
@@ -246,7 +246,7 @@
 				reference.verse1 = 1;
 				reference.verse2 = max;
 			}
-					
+
 			switch (v) {
 				default:
 				case 'NET':
@@ -258,18 +258,18 @@
 					break;
 				case 'ESV':
 					jsonp('http://www.esvapi.org/crossref/ref.php?reference=' + encodeURIComponent(reference.toString()), callback);
-					break;					
-			} 
-		},		
+					break;
+			}
+		},
 		handleBibleText = function(d) {
-			var 
+			var
 				v = getPopupVersion(),
 				p = bibly.popup,
 				max = bibly.maxVerses,
 				text = '',
 				className = v + '-version',
 				i,il;
-				
+
 			switch (v) {
 				default:
 				case 'NET':
@@ -284,17 +284,17 @@
 					break;
 				case 'ESV':
 					text = d.content;
-					break;					
+					break;
 			}
-			
+
 			p.content.innerHTML = '<div class="' + className + '">' + text + '</div>';
 		},
 		checkPosTimeout,
 		handleLinkMouseOver = function(e) {
 			if (!e) e = win.event;
-			
+
 			clearPositionTimer();
-						
+
 			var target = (e.target) ? e.target : e.srcElement,
 				p = bibly.popup,
 				pos = getPosition(target),
@@ -304,65 +304,65 @@
 				referenceText = target.getAttribute('rel'),
 				viewport = getWindowSize(),
 				scrollPos = getScroll();
-			
+
 			p.outer.style.display = 'block';
 			p.header.innerHTML = referenceText + ' (' + v + ')';
 			p.content.innerHTML = 'Loading...<br/><br/><br/>';
 			p.footer.innerHTML = getFooter(v);
-			
-			
+
+
 			function positionPopup() {
 				x = pos.left - (p.outer.offsetWidth/2) + (target.offsetWidth/2);
 				y = pos.top - p.outer.clientHeight; // for the arrow
-				
+
 				if (x < 0) {
 					x = 0;
 				} else if (x + p.outer.clientWidth > viewport.width) {
 					x = viewport.width - p.outer.clientWidth - 20;
 				}
-				
+
 				if (y < 0 || (y < scrollPos.y) ){ // above the screen
 					y = pos.top + target.offsetHeight + 10;
 					p.arrowtop.style.display = 'block';
 					p.arrowtop_border.style.display = 'block';
 					p.arrowbot.style.display = 'none';
-					p.arrowbot_border.style.display = 'none';					
-					
+					p.arrowbot_border.style.display = 'none';
+
 				} else {
-					y = y-10; 
+					y = y-10;
 					p.arrowtop.style.display = 'none';
 					p.arrowtop_border.style.display = 'none';
 					p.arrowbot.style.display = 'block';
-					p.arrowbot_border.style.display = 'block';					
+					p.arrowbot_border.style.display = 'block';
 				}
-				
+
 				p.outer.style.top = y + 'px';
-				p.outer.style.left = x + 'px';				
+				p.outer.style.left = x + 'px';
 			}
 			positionPopup();
-			
-			
+
+
 			getBibleText(referenceText, function(d) {
 				// handle the various JSON outputs
 				handleBibleText(d);
-				
+
 				// reposition the popup
 				//y = pos.top - p.outer.clientHeight - 10; // border
 				//p.outer.style.top = y + 'px';
 				positionPopup();
-			});			
+			});
 		},
 		handleLinkMouseOut = function(e) {
 			startPositionTimer();
 		},
-		
-		handlePopupMouseOver = function(e) {	
+
+		handlePopupMouseOver = function(e) {
 			clearPositionTimer();
 		},
 		handlePopupMouseOut = function(e) {
 			startPositionTimer();
 		},
-		
+
 		/* Timer on/off */
 		startPositionTimer = function () {
 			checkPosTimeout = setTimeout(hidePopup, 500);
@@ -373,10 +373,10 @@
 		},
 		hidePopup = function() {
 			var p = bibly.popup;
-			p.outer.style.display = 'none';	
+			p.outer.style.display = 'none';
 		},
-		
-		getPosition = function(node) {		
+
+		getPosition = function(node) {
 			var curleft = 0;
 			var curtop = 0;
 			var curtopscroll = 0;
@@ -384,16 +384,16 @@
 			if (node.offsetParent) {
 				do {
 					curleft += node.offsetLeft;
-					curtop += node.offsetTop;				
+					curtop += node.offsetTop;
 					curleftscroll += node.offsetParent ? node.offsetParent.scrollLeft : 0;
 					curtopscroll += node.offsetParent ? node.offsetParent.scrollTop : 0;
 				} while (node = node.offsetParent);
 			}
-			
+
 			return {left:curleft,top:curtop,leftScroll:curleftscroll,topScroll:curtopscroll};
 		},
 		getWindowSize= function() {
-			var width = 0, 
+			var width = 0,
 				height = 0;
 			if( typeof( win.innerWidth ) == 'number' ) {
 				// Non-IE
@@ -408,11 +408,11 @@
 				width = body.clientWidth;
 				height = body.clientHeight;
 			}
-			
+
 			return {width:width, height: height};
 		},
 		getScroll = function () {
-			var scrOfX = 0, 
+			var scrOfX = 0,
 				scrOfY = 0;
 			if( body && ( body.scrollLeft || body.scrollTop ) ) {
 				//DOM compliant
@@ -427,22 +427,22 @@
 				scrOfY = win.pageYOffset;
 				scrOfX = win.pageXOffset;
 			}
-			
+
 			return {x: scrOfX, y:scrOfY };
 		},
-		scanForReferences = function(node) {				
+		scanForReferences = function(node) {
 			// build doc
-			traverseDOM(node.childNodes[0], 1, textHandler);		
+			traverseDOM(node.childNodes[0], 1, textHandler);
 		},
 		traverseDOM = function(node, depth, textHandler) {
 			var count = 0,
 				//skipRegex = /^(a|script|style|textarea)$/i,
 				skipRegex = new RegExp('^(' + alwaysSkipTags.concat(bibly.ignoreTags).join('|') + ')$', 'i');
-				
+
 			function restartTraversing() {
 				traverseDOM(node, depth, textHandler);
 			}
-				
+
 			while (node && depth > 0) {
 				count++;
 				if (count >= bibly.maxNodes) {
@@ -452,7 +452,7 @@
 
 				switch (node.nodeType) {
 					case 1: // ELEMENT_NODE
-						if (!skipRegex.test(node.tagName.toLowerCase()) && node.childNodes.length > 0 && (bibly.ignoreClassName == '' || node.className.toString().indexOf(bibly.ignoreClassName) == -1)) {											
+						if (!skipRegex.test(node.tagName.toLowerCase()) && node.childNodes.length > 0 && (bibly.ignoreClassName == '' || node.className.toString().indexOf(bibly.ignoreClassName) == -1)) {
 							node = node.childNodes[0];
 							depth ++;
 							continue;
@@ -489,15 +489,15 @@
 				   fxn();
 					__();
 				};
-			}			
-		},		
+			}
+		},
 		isStarted = false,
 		extend = function() {
 			// borrowed from ender
-			var options, name, src, copy, 
+			var options, name, src, copy,
 				target = arguments[0] || {},
 				i = 1,
-				length = arguments.length;	
+				length = arguments.length;
 
 			// Handle case when target is a string or something (possible in deep copy)
 			if ( typeof target !== "object" && typeof target !== "function" ) {
@@ -525,30 +525,30 @@
 			}
 
 			// Return the modified object
-			return target;				
+			return target;
 		},
 		startBibly = function() {
-			
+
 			if (isStarted)
-				return;				
+				return;
 			isStarted = true;
-			
+
 			doc = document;
 			body = doc.body;
-			
+
 			// create popup
 			var p = bibly.popup = {
 					outer: doc.createElement('div')
-				}, 
+				},
 				parts = ['header','content','footer','arrowtop_border','arrowtop','arrowbot_border','arrowbot'],
 				i,
 				il,
 				div,
 				name,
 				node = null;
-				
+
 			p.outer.className = 'bibly_popup_outer';
-			// build all the parts	
+			// build all the parts
 			for (i=0,il=parts.length; i<il; i++) {
 				name = parts[i];
 				div = doc.createElement('div');
@@ -556,9 +556,9 @@
 				p.outer.appendChild(div);
 				p[name] = div;
 			}
-			
-			body.appendChild(p.outer);	
-			
+
+			body.appendChild(p.outer);
+
 			addEvent(p.outer,'mouseover',handlePopupMouseOver);
 			addEvent(p.outer,'mouseout',handlePopupMouseOut);
 
@@ -566,11 +566,11 @@
 				if (bibly.startNodeId != '') {
 					node = doc.getElementById(bibly.startNodeId);
 				}
-				
+
 				if (node == null) {
 					node = body;
 				}
-				
+
 				scanForReferences(node);
 			}
 		};
@@ -578,13 +578,13 @@
 	// super cheater version of DOMoade
 	// do whatever happens first
 	addEvent(doc,'DOMContentLoaded',startBibly);
-	addEvent(win,'load',startBibly);	
-	
-	if (typeof window.bibly != 'undefined') 
+	addEvent(win,'load',startBibly);
+
+	if (typeof window.bibly != 'undefined')
 		bibly = extend(bibly, window.bibly);
-	
+
 	// export
 	bibly.startBibly = startBibly;
 	bibly.scanForReferences = scanForReferences;
-	win.bibly = bibly;	
+	win.bibly = bibly;
 })();
